@@ -79,10 +79,10 @@ public class SpecialPowerUI : MonoBehaviour {
         GetComponent<Image>().sprite = _type.Sprite;
         _player = myPlayer;
 
-        if (myPlayer.selectedType.Type == state)
+        /*if (myPlayer.selectedType.Type == state)
         {
             GetComponent<Image>().sprite = _type.SpecialitySprite;
-        }
+        }*/
     }
 
     public void Fly ()

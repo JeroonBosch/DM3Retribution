@@ -16,8 +16,8 @@ public class Player : ScriptableObject
     private PortraitUI portrait;
     private Sprite _portraitSprite;
 
-    private TileTypes _selectedType;
-    public TileTypes selectedType { get { return _selectedType; } }
+    //private TileTypes _selectedType;
+    //public TileTypes selectedType { get { return _selectedType; } }
 
     private TileTypes _type1;
     public TileTypes type1 { get { return _type1; } }
@@ -52,9 +52,9 @@ public class Player : ScriptableObject
         playerNumber = number;
 
         portrait = null;
-        _health = Constants.PlayerStartHP;
-        _selectedType = new TileTypes();
-        _selectedType.Type = TileTypes.ESubState.yellow;
+        _health = settings.PlayerHealth;
+        //_selectedType = new TileTypes();
+        //_selectedType.Type = TileTypes.ESubState.yellow;
         _type1 = new TileTypes();
         _type2 = new TileTypes();
         _type3 = new TileTypes();
@@ -73,7 +73,7 @@ public class Player : ScriptableObject
         colors = new List<Transform>();
     }
 
-    public void ReceiveDamage(int damage)
+    public void ReceiveDamage(float damage)
     {
         health -= damage;
 
@@ -88,18 +88,18 @@ public class Player : ScriptableObject
     public void Heal (int heal)
     {
         health += heal;
-        health = Mathf.Min(Constants.PlayerStartHP, health);
+        health = Mathf.Min(settings.PlayerHealth, health);
 
-        portrait.SetHitpoints(health, Constants.PlayerStartHP);
+        portrait.SetHitpoints(health, settings.PlayerHealth);
     }
 
-    public void SelectColorByIndex(int index)
+    /*public void SelectColorByIndex(int index)
     {
         if ((TileTypes.ESubState.yellow + index) != _selectedType.Type)
         {
             _selectedType.Type = TileTypes.ESubState.yellow + index;
         }
-    }
+    }*/
 
     public void SetUI (Transform transform)
     {
@@ -159,8 +159,8 @@ public class Player : ScriptableObject
     public void FillPower (TileTypes.ESubState type, int comboSize)
     {
         float multiplier = 1f;
-        if (selectedType.Type == type)
-            multiplier = settings.SpecialityMultiplier; //multiplier = Constants.SpecialMoveMultiplier;
+        //if (selectedType.Type == type)
+            //multiplier = settings.SpecialityMultiplier; //multiplier = Constants.SpecialMoveMultiplier;
 
         if (type1.Type == type)
         {

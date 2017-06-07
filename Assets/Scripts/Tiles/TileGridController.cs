@@ -9,8 +9,16 @@ public class TileGridController : MonoBehaviour {
     //GridLayoutGroup _grid;
     public List<TileColumn> columns;
 
+    private Vector2 _boosterRequest = new Vector2(-1f, -1f);
+    private TileTypes.ESubState _boosterType = TileTypes.ESubState.blue;
+    private string _boosterPath = "BoosterOneTile";
+
+    private List<BaseTile> destructionQueue;
+    private bool isDestroying = false;
+
     private void Awake()
     {
+        destructionQueue = new List<BaseTile>();
         //_rt = gameObject.GetComponent<RectTransform>();
         //_grid = gameObject.GetComponent<GridLayoutGroup>();
         columns = new List<TileColumn>();
@@ -55,6 +63,15 @@ public class TileGridController : MonoBehaviour {
                     Refill(column, "top");
             }
         }
+
+        if (destructionQueue.Count == 0)
+        {
+            if (_boosterRequest.x > -1f)
+            {
+                ConvertTileToBooster(_boosterRequest, _boosterType, _boosterPath);
+                _boosterRequest = new Vector2(-1f, -1f);
+            }
+        }
     }
 
     public List<GameObject> AllTilesAsGameObject()
@@ -85,8 +102,25 @@ public class TileGridController : MonoBehaviour {
         return list;
     }
 
-    public void DestroyTile(GameObject tile, Player destroyedBy, int count)
+    public BaseTile FindBaseTileAtPosition (Vector2 position)
     {
+        List<BaseTile> allTiles = AllTilesAsBaseTile();
+        BaseTile targetTile = allTiles.Find(item => item.x == position.x && item.y == position.y);
+
+        return targetTile;
+    }
+
+
+
+    public void EmptyDestructionQueue ()
+    {
+        destructionQueue.Clear();
+    }
+
+    public void DestroyTile(GameObject tile, Player destroyedBy, int count, int totalCount)
+    {
+        isDestroying = true;
+
         List<BaseTile> removeFromList = null;
         foreach (TileColumn column in columns)
         {
@@ -96,7 +130,35 @@ public class TileGridController : MonoBehaviour {
                 removeFromList = column.tiles;
             }
         }
-        tile.GetComponent<BaseTile>().PromptDestroy(removeFromList, destroyedBy, count);
+        destructionQueue.Add(tile.GetComponent<BaseTile>());
+        tile.GetComponent<BaseTile>().PromptDestroy(destructionQueue, removeFromList, destroyedBy, count, totalCount);
+
+        if (tile.GetComponent<BoosterOneTile>())
+        {
+            List<BaseTile> toDestroyAlso = tile.GetComponent<BoosterOneTile>().OtherTilesToExplode(this);
+            foreach (BaseTile destroyTile in toDestroyAlso) {
+                DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
+            }
+        }
+    }
+
+    public void CreateBoosterAt (BaseTile tile, int totalCount, TileTypes.ESubState requestedType)
+    {
+        _boosterRequest = tile.xy;
+        _boosterType = requestedType;
+
+        if (totalCount >= Constants.BoosterThreeThreshhold)
+        {
+            _boosterPath = "BoosterThreeTile";
+        }
+        else  if (totalCount >= Constants.BoosterTwoThreshhold)
+        {
+            _boosterPath = "BoosterTwoTile";
+        }
+        else if (totalCount >= Constants.BoosterOneThreshhold)
+        {
+            _boosterPath = "BoosterOneTile";
+        }
     }
 
     private void Refill (TileColumn column, string direction)
@@ -121,6 +183,28 @@ public class TileGridController : MonoBehaviour {
         foreach (BaseTile tile in column.tiles)
         {
             tile.transform.name = "Tile (" + column.number + ", " + column.tiles.IndexOf(tile) + ")"; //F.e. Tile (0,7)
+            tile.xy = new Vector2(column.number, column.tiles.IndexOf(tile));
+        }
+    }
+
+    private void ConvertTileToBooster (Vector2 position, TileTypes.ESubState requestedType, string path)
+    {
+        TileColumn column = columns[(int)position.x];
+        BaseTile targetTile = column.tiles.Find(item => item.x == position.x && item.y == position.y);
+
+        if (targetTile)
+        {
+            int index = column.tiles.IndexOf(targetTile);
+            GameObject newTile = Instantiate(Resources.Load(path)) as GameObject;
+            newTile.transform.SetParent(column.transform, false);
+            column.tiles.RemoveAt(index);
+            Destroy(targetTile.gameObject);
+            column.tiles.Insert(index, newTile.GetComponent<BaseTile>());
+            newTile.GetComponent<BaseTile>().type.Type = requestedType;
+            newTile.transform.SetSiblingIndex(index);
+            newTile.GetComponent<BaseTile>().xy = new Vector2(column.number, index);
+
+            newTile.transform.name = "Tile (" + column.number + ", " + index + ")"; //F.e. Tile (0,7)
         }
     }
 }

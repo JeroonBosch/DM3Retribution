@@ -6,7 +6,7 @@ public static class Constants {
 
 	public const string Controller = "Mouse";
 	
-	public const int PlayerStartHP = 100;
+	public const int PlayerStartHP = 200;
     public const float MoveTimeInSeconds = 20f;
 
     //public const float SpecialMoveFillRequirement = 30f; //How much the maximum of the chosen 'special' is
@@ -17,4 +17,8 @@ public static class Constants {
     public const int gridSizeVertical = 8;
 
     public const int AmountOfColors = 4;
+
+    public const int BoosterOneThreshhold = 5;
+    public const int BoosterTwoThreshhold = 10;
+    public const int BoosterThreeThreshhold = 20;
 }

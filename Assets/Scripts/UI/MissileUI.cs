@@ -31,8 +31,8 @@ public class MissileUI : MonoBehaviour
         Destroy(gameObject, 3f);
     }
 
-    private void OnDestroy()
+    /*private void OnDestroy()
     {
         RootController.Instance.EnableControls();
-    }
+    }*/
 }

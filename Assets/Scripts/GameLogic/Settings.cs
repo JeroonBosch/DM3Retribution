@@ -47,6 +47,8 @@ public class Settings : ScriptableObject
         _redValue = 15f;
 
         _specialityMultiplier = 2f;
+
+        _playerHealth = 200f;
     }
 
     public float GetFillRequirementByType (TileTypes.ESubState state)

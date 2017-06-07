@@ -40,7 +40,7 @@ public class MenuUI : MonoBehaviour
             colors.Add(colorSelect.Find("ColorGreen"));
             colors.Add(colorSelect.Find("ColorRed"));
 
-            Transform selected1 = null;
+            /*Transform selected1 = null;
             for (int i = 0; i < colors.Count; i++)
             {
                 Transform colorImage = colors[i];
@@ -59,7 +59,7 @@ public class MenuUI : MonoBehaviour
                     selected1.SetParent(colorImage, false);
                 }
 
-            }
+            }*/
         }
     }
 
@@ -77,7 +77,7 @@ public class MenuUI : MonoBehaviour
             playerNumber = 1;
 
         Player player = RootController.Instance.GetPlayer(playerNumber);
-        player.SelectColorByIndex(index);
+        //player.SelectColorByIndex(index);
     }
 
 //Requirements

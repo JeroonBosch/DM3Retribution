@@ -13,9 +13,12 @@ public class TileExplosionUI : MonoBehaviour
     private float _random;
 
     private bool _damageApplied = false;
+    private float _damageMultiplier = 1;
 
-    public void Init(Transform target, Player targetPlayer)
+    public void Init(Transform target, Player targetPlayer, float damageMultiplier)
     {
+        _damageMultiplier = damageMultiplier;
+
         _target = target; //overridden, but kept as backup if we ever have particles to fly to the combo-meter
         _target = targetPlayer.transform;
         _targetPlayer = targetPlayer;
@@ -77,6 +80,6 @@ public class TileExplosionUI : MonoBehaviour
     {
         _damageApplied = true;
         _targetPlayer.NormalExplosion();
-        _targetPlayer.ReceiveDamage(1);
+        _targetPlayer.ReceiveDamage(1 * _damageMultiplier);
     }
 }

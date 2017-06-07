@@ -76,16 +76,16 @@ public class RootController : MonoBehaviour {
     {
         Debug.Log("Game start.");
         Player player1 = ScriptableObject.CreateInstance<Player>();
-        player1.Init("Player1", 0);
-        players.Add(player1);
         player1.settings = ScriptableObject.CreateInstance<Settings>();
         player1.settings.DefaultSettings();
+        player1.Init("Player1", 0);
+        players.Add(player1);
 
         Player player2 = ScriptableObject.CreateInstance<Player>();
-        player2.Init("Player2", 1);
-        players.Add(player2);
         player2.settings = ScriptableObject.CreateInstance<Settings>();
         player2.settings.DefaultSettings();
+        player2.Init("Player2", 1);
+        players.Add(player2);
     }
 
     /*public Settings GetSettings()

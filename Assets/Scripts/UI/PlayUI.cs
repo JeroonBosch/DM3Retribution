@@ -258,10 +258,19 @@ public class PlayUI : MonoBehaviour
     void Combo ()
     {
         int count = 0;
+        int totalCount = _dragTiles.Count;
+
+        if (totalCount >= 5)
+        {
+            BaseTile tile = _dragTiles[_dragTiles.Count - 1].GetComponent<BaseTile>();
+            _gridController.CreateBoosterAt(tile, totalCount, tile.type.Type);
+        }
+
+        _gridController.EmptyDestructionQueue();
         foreach (GameObject go in _dragTiles)
         {
             count++;
-            _gridController.DestroyTile(go, _curPlayer, count);
+            _gridController.DestroyTile(go, _curPlayer, count, totalCount);
         }
         //RootController.Instance.NextPlayer(_curPlayer.playerNumber).ReceiveDamage(_dragTiles.Count);
         _curPlayer.FillPower(_dragTiles[0].GetComponent<BaseTile>().type.Type, _dragTiles.Count);
