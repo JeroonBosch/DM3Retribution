@@ -140,6 +140,15 @@ public class TileGridController : MonoBehaviour {
                 DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
             }
         }
+
+        if (tile.GetComponent<BoosterTwoTile>())
+        {
+            List<BaseTile> toDestroyAlso = tile.GetComponent<BoosterTwoTile>().OtherTilesToExplode(this);
+            foreach (BaseTile destroyTile in toDestroyAlso)
+            {
+                DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
+            }
+        }
     }
 
     public void CreateBoosterAt (BaseTile tile, int totalCount, TileTypes.ESubState requestedType)
