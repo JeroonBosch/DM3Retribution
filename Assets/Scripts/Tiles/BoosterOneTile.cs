@@ -5,12 +5,13 @@ using System.Collections.Generic;
 public class BoosterOneTile : BaseTile
 {
     TileTypes.ESubState _originalType;
-    // Use this for initialization
+    public GameObject attachedIcon;
+
     protected override void Awake()
     {
         base.Awake();
         _originalType = _type.Type;
-        _image.sprite = type.SpecialitySprite;
+        _image.sprite = type.Sprite;
     }
 
     // Update is called once per frame
@@ -18,7 +19,7 @@ public class BoosterOneTile : BaseTile
     {
         base.Update();
         if (_type.Type != _originalType)
-            _image.sprite = type.SpecialitySprite;
+            _image.sprite = type.Sprite;
     }
 
     public List<BaseTile> OtherTilesToExplode(TileGridController grid) {

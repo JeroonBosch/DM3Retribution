@@ -77,7 +77,7 @@ public class Player : ScriptableObject
     {
         health -= damage;
 
-        portrait.SetHitpoints(health, Constants.PlayerStartHP);
+        portrait.SetHitpoints(health, settings.PlayerHealth);
 
         if (health <= 0f)
         {
@@ -314,7 +314,7 @@ public class Player : ScriptableObject
 
             Destroy(explosion, 1f);
 
-            Heal((int)settings.GreenFillRequirement);
+            Heal((int)settings.GreenValue);
         }
     }
 

@@ -149,6 +149,15 @@ public class TileGridController : MonoBehaviour {
                 DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
             }
         }
+
+        if (tile.GetComponent<BoosterThreeTile>())
+        {
+            List<BaseTile> toDestroyAlso = tile.GetComponent<BoosterThreeTile>().OtherTilesToExplode(this);
+            foreach (BaseTile destroyTile in toDestroyAlso)
+            {
+                DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
+            }
+        }
     }
 
     public void CreateBoosterAt (BaseTile tile, int totalCount, TileTypes.ESubState requestedType)
@@ -212,8 +221,10 @@ public class TileGridController : MonoBehaviour {
             newTile.GetComponent<BaseTile>().type.Type = requestedType;
             newTile.transform.SetSiblingIndex(index);
             newTile.GetComponent<BaseTile>().xy = new Vector2(column.number, index);
-
             newTile.transform.name = "Tile (" + column.number + ", " + index + ")"; //F.e. Tile (0,7)
+
+            GameObject boosterIcon = Instantiate(Resources.Load(path + "Icon")) as GameObject;
+            boosterIcon.transform.SetParent(newTile.transform, false);
         }
     }
 }
