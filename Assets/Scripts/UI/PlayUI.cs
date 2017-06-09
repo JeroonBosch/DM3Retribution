@@ -24,6 +24,8 @@ public class PlayUI : MonoBehaviour
     private GameObject _lingerTile;
     private Player _curPlayer;
 
+    private bool _boosterUsed = false;
+
     private void Start()
     {
         _canvas = transform.Find("Canvas");
@@ -39,6 +41,8 @@ public class PlayUI : MonoBehaviour
 
         RootController.Instance.GetPlayer(0).SetUI(_player1);
         RootController.Instance.GetPlayer(1).SetUI(_player2);
+        RootController.Instance.GetPlayer(0).health = RootController.Instance.GetPlayer(0).settings.PlayerHealth;
+        RootController.Instance.GetPlayer(1).health = RootController.Instance.GetPlayer(1).settings.PlayerHealth;
 
         _curPlayer = RootController.Instance.GetPlayer(0);
         RootController.Instance.GetPlayer(1).SetTimerActive(false);
@@ -180,11 +184,15 @@ public class PlayUI : MonoBehaviour
                 }
                 if (_selectedUI.transform.parent == _curPlayer.transform)
                 {
-                    if (_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4())
+                    if ((_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4()) && !_boosterUsed)
                     {
                         _selectedUI.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
-                        if (_selectedUI.name != "Color1") //not blue
-                            EndTurn();
+                        //if (_selectedUI.name != "Color1") //not blue
+                            //EndTurn();
+                        _boosterUsed = true;
+                    } else
+                    {
+                        _selectedUI = null;
                     }
                 }
             }
@@ -298,15 +306,19 @@ public class PlayUI : MonoBehaviour
     {
         if (_curPlayer.extraTurn)
         {
-            _curPlayer.EndBlueTileEffect();
+            _curPlayer.EndExtraTurnEffect();
         } else { 
             Player nextPlayer = RootController.Instance.NextPlayer(_curPlayer.playerNumber);
 
             _timer = 0;
             _curPlayer.SetTimerActive(false);
+            _curPlayer.turn++;
 
             _curPlayer = nextPlayer;
             nextPlayer.SetTimerActive(true);
+            RootController.Instance.SetCurrentPlayer(nextPlayer);
+
+            _boosterUsed = false;
         }
     }
 }

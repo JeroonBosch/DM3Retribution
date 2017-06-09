@@ -34,7 +34,7 @@ public class TileExplosionUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        RootController.Instance.EnableControls();
+        //RootController.Instance.EnableControls();
         if (!_damageApplied)
             ApplyDamage();
     }

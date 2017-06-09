@@ -135,6 +135,11 @@ public class TileGridController : MonoBehaviour {
 
         if (tile.GetComponent<BoosterOneTile>())
         {
+            GameObject explosion = Instantiate(Resources.Load("BoosterOneExplosion")) as GameObject;
+            explosion.transform.SetParent(tile.transform.parent.parent.parent);
+            explosion.transform.position = tile.transform.position;
+            Destroy(explosion, 0.64f);
+
             List<BaseTile> toDestroyAlso = tile.GetComponent<BoosterOneTile>().OtherTilesToExplode(this);
             foreach (BaseTile destroyTile in toDestroyAlso) {
                 DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
@@ -143,6 +148,11 @@ public class TileGridController : MonoBehaviour {
 
         if (tile.GetComponent<BoosterTwoTile>())
         {
+            GameObject explosion = Instantiate(Resources.Load("BoosterTwoExplosion")) as GameObject;
+            explosion.transform.SetParent(tile.transform.parent.parent.parent);
+            explosion.transform.position = tile.transform.position;
+            Destroy(explosion, 0.64f);
+
             List<BaseTile> toDestroyAlso = tile.GetComponent<BoosterTwoTile>().OtherTilesToExplode(this);
             foreach (BaseTile destroyTile in toDestroyAlso)
             {
@@ -152,6 +162,11 @@ public class TileGridController : MonoBehaviour {
 
         if (tile.GetComponent<BoosterThreeTile>())
         {
+            GameObject explosion = Instantiate(Resources.Load("BoosterThreeExplosion")) as GameObject;
+            explosion.transform.SetParent(tile.transform.parent.parent.parent);
+            explosion.transform.localPosition = new Vector3(0f, 0f, 10f);
+            Destroy(explosion, 0.64f);
+
             List<BaseTile> toDestroyAlso = tile.GetComponent<BoosterThreeTile>().OtherTilesToExplode(this);
             foreach (BaseTile destroyTile in toDestroyAlso)
             {

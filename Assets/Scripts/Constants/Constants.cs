@@ -20,5 +20,5 @@ public static class Constants {
 
     public const int BoosterOneThreshhold = 5;
     public const int BoosterTwoThreshhold = 10;
-    public const int BoosterThreeThreshhold = 20;
+    public const int BoosterThreeThreshhold = 15;
 }

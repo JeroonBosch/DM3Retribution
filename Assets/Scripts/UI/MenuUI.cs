@@ -172,6 +172,8 @@ public class MenuUI : MonoBehaviour
     public void ChangePlayerHealth(string newValue)
     {
         RootController.Instance.GetPlayer(0).settings.PlayerHealth = float.Parse(newValue);
+        RootController.Instance.GetPlayer(0).health = float.Parse(newValue);
         RootController.Instance.GetPlayer(1).settings.PlayerHealth = float.Parse(newValue);
+        RootController.Instance.GetPlayer(1).health = float.Parse(newValue);
     }
 }

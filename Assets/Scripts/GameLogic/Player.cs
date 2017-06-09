@@ -46,13 +46,16 @@ public class Player : ScriptableObject
     public bool extraTurn = false;
     private GameObject extraTurnEffect = null;
 
+    public bool shielded = false;
+    private GameObject shieldEffect = null;
+
     public void Init(string name, int number)
     {
         playerString = name;
         playerNumber = number;
 
         portrait = null;
-        _health = settings.PlayerHealth;
+        health = settings.PlayerHealth;
         //_selectedType = new TileTypes();
         //_selectedType.Type = TileTypes.ESubState.yellow;
         _type1 = new TileTypes();
@@ -75,14 +78,26 @@ public class Player : ScriptableObject
 
     public void ReceiveDamage(float damage)
     {
-        health -= damage;
-
-        portrait.SetHitpoints(health, settings.PlayerHealth);
-
-        if (health <= 0f)
+        if (!shielded)
         {
-            RootController.Instance.TriggerEndScreen(this);
+            health -= damage;
+
+            portrait.SetHitpoints(health, settings.PlayerHealth);
+
+            if (health <= 0f)
+            {
+                RootController.Instance.TriggerEndScreen(this);
+            }
+        } else if (shielded && shieldEffect == null)
+        {
+            if (transform)
+            {
+                shieldEffect = Instantiate(Resources.Load<GameObject>("BlueTileEffect"));
+                shieldEffect.transform.SetParent(transform.parent);
+                shieldEffect.transform.position = transform.position;
+            }
         }
+
     }
 
     public void Heal (int heal)
@@ -281,11 +296,23 @@ public class Player : ScriptableObject
             explosion.transform.SetParent(transform.parent);
             explosion.transform.position = transform.position;
 
-            Destroy(explosion, .94f);
+            Destroy(explosion, 1.2f);
         }
     }
 
     public void BlueTileEffect()
+    {
+        shielded = true;
+    }
+
+    public void EndBlueTileEffect ()
+    {
+        shielded = false;
+        if (shieldEffect)
+            Destroy(shieldEffect);
+    }
+
+    public void ExtraTurnEffect()
     {
         if (transform)
         {
@@ -297,7 +324,7 @@ public class Player : ScriptableObject
         }
     }
 
-    public void EndBlueTileEffect ()
+    public void EndExtraTurnEffect()
     {
         extraTurn = false;
         if (extraTurnEffect)

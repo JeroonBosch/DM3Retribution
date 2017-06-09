@@ -93,7 +93,7 @@ public class SpecialPowerUI : MonoBehaviour {
         if (_activeObject) { 
             Rigidbody2D rb = _activeObject.GetComponent<Rigidbody2D>();
             rb.velocity = _velocity * _speed;
-            RootController.Instance.DisableControls();
+            //RootController.Instance.DisableControls();
         }
     }
 
@@ -110,7 +110,7 @@ public class SpecialPowerUI : MonoBehaviour {
         else if (_type.Type == TileTypes.ESubState.yellow)
             _activeObject = Instantiate(Resources.Load<GameObject>("YellowSpecial"));
         else if (_type.Type == TileTypes.ESubState.blue)
-            curPlayer.BlueTileEffect();
+            curPlayer.BlueTileEffect(); //Shield
         else if (_type.Type == TileTypes.ESubState.green)
             curPlayer.GreenTileEffect();
 

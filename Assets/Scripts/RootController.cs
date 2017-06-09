@@ -9,6 +9,7 @@ public class RootController : MonoBehaviour {
     private bool _controlsEnabled = true;
     private StateBase _stateController;
     private List<Player> players;
+    private Player currentPlayer;
     private Player _winnerPlayer;
     //private Settings _settings;
 
@@ -54,7 +55,11 @@ public class RootController : MonoBehaviour {
 
     public void EnableControls()
     {
-        _controlsEnabled = true;
+        if (!_controlsEnabled)
+        {
+            _controlsEnabled = true;
+            GetCurrentPlayer().EndBlueTileEffect();
+        }    
     }
 
     public void DisableControls()
@@ -86,6 +91,8 @@ public class RootController : MonoBehaviour {
         player2.settings.DefaultSettings();
         player2.Init("Player2", 1);
         players.Add(player2);
+
+        currentPlayer = player1;
     }
 
     /*public Settings GetSettings()
@@ -107,6 +114,21 @@ public class RootController : MonoBehaviour {
         else
             nextPlayer = players[0];
         return nextPlayer;
+    }
+
+    public Player GetCurrentPlayer()
+    {
+        return currentPlayer;
+    }
+
+    public void SetCurrentPlayer(Player player)
+    {
+        currentPlayer = player;
+    }
+
+    public Player GetNextPlayer()
+    {
+        return NextPlayer(currentPlayer.playerNumber);
     }
 
     public Player GetWinnerPlayer()
