@@ -11,6 +11,6 @@ public class ControlsAfterAnimation : MonoBehaviour
     private void OnDestroy()
     {
         RootController.Instance.EnableControls();
-        //RootController.Instance.GetCurrentPlayer().EndBlueTileEffect();
+        //RootController.Instance.GetNextPlayer().EndBlueTileEffect();
     }
 }

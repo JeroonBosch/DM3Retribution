@@ -278,6 +278,7 @@ public class Player : ScriptableObject
     {
         if (transform)
         {
+
             GameObject explosion = Instantiate(Resources.Load<GameObject>(resourcePath));
             explosion.transform.SetParent(transform.parent);
             explosion.transform.position = transform.position;
@@ -307,6 +308,7 @@ public class Player : ScriptableObject
 
     public void EndBlueTileEffect ()
     {
+        Debug.Log("Shield removed, why?");
         shielded = false;
         if (shieldEffect)
             Destroy(shieldEffect);

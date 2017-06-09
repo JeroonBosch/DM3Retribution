@@ -5,6 +5,6 @@ public class BreakShield : MonoBehaviour
 {
     private void OnDestroy()
     {
-        RootController.Instance.GetCurrentPlayer().EndBlueTileEffect();
+        RootController.Instance.GetNextPlayer().EndBlueTileEffect();
     }
 }
