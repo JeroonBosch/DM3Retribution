@@ -308,7 +308,6 @@ public class Player : ScriptableObject
 
     public void EndBlueTileEffect ()
     {
-        Debug.Log("Shield removed, why?");
         shielded = false;
         if (shieldEffect)
             Destroy(shieldEffect);

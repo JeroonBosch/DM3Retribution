@@ -14,11 +14,11 @@ public static class Constants {
     public const int TurnPassHealAmount = 5;
 
     public const int gridSizeHorizontal = 8;
-    public const int gridSizeVertical = 8;
+    public const int gridSizeVertical = 10; //was 8 for non-hex
 
     public const int AmountOfColors = 4;
 
     public const int BoosterOneThreshhold = 5;
-    public const int BoosterTwoThreshhold = 10;
-    public const int BoosterThreeThreshhold = 15;
+    public const int BoosterTwoThreshhold = 6;
+    public const int BoosterThreeThreshhold = 7;
 }

@@ -28,7 +28,7 @@ public class SpecialPowerUI : MonoBehaviour {
     {
         _type = new TileTypes();
 
-        GetComponent<Image>().sprite = _type.Sprite;
+        GetComponent<Image>().sprite = _type.HexSprite;
         _text = transform.Find("Power").GetComponent<Text>();
     }
 
@@ -76,7 +76,7 @@ public class SpecialPowerUI : MonoBehaviour {
     public void SetColorType (TileTypes.ESubState state, Player myPlayer)
     {
         _type.Type = state;
-        GetComponent<Image>().sprite = _type.Sprite;
+        GetComponent<Image>().sprite = _type.HexSprite;
         _player = myPlayer;
 
         /*if (myPlayer.selectedType.Type == state)

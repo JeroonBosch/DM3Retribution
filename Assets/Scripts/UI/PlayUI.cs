@@ -13,7 +13,8 @@ public class PlayUI : MonoBehaviour
     private Transform _gameboard;
     private GameObject _selectedUI;
     private GameObject _selectedUI2;
-    private TileGridController _gridController;
+    //private TileGridController _gridController;
+    private HexGrid _gridController;
 
     private Lean.Touch.LeanFinger _dragFinger;
     private List<GameObject> _dragTiles;
@@ -29,8 +30,10 @@ public class PlayUI : MonoBehaviour
     private void Start()
     {
         _canvas = transform.Find("Canvas");
-        _gameboard = _canvas.Find("GameBoard");
-        _gridController = _gameboard.GetComponent<TileGridController>();
+        //_gameboard = _canvas.Find("GameBoard");
+        //_gridController = _gameboard.GetComponent<TileGridController>();
+        _gameboard = _canvas.Find("HexBoard");
+        _gridController = _gameboard.GetComponent<HexGrid>();
         _player1 = _canvas.Find("Player1");
         _player2 = _canvas.Find("Player2");
         _line = _canvas.GetComponent<LineRenderer>();
@@ -69,9 +72,9 @@ public class PlayUI : MonoBehaviour
             {
                 if (_dragTiles.Count == 0)
                     _dragTiles.Add(newTile);
-                else if (newTile.GetComponent<BaseTile>().type.Type == _dragTiles[0].GetComponent<BaseTile>().type.Type)
+                else if (newTile.GetComponent<HexTile>().type.Type == _dragTiles[0].GetComponent<HexTile>().type.Type)
                 {
-                    if (newTile.GetComponent<BaseTile>().IsAdjacentTo(_dragTiles[_dragTiles.Count - 1]))
+                    if (newTile.GetComponent<HexTile>().IsAdjacentTo(_dragTiles[_dragTiles.Count - 1]))
                         _dragTiles.Add(newTile);
                 }
             } else if (newTile != null && _dragTiles.Contains(newTile))
@@ -97,11 +100,16 @@ public class PlayUI : MonoBehaviour
             }
 
             _line.positionCount = _dragTiles.Count;
+
+            foreach (HexTile tile in _gridController.AllTilesAsHexTile())
+                tile.selected = false;
+
             for (int i = 0; i < _dragTiles.Count; i++)
             {
                 Vector3 pos = _dragTiles[i].transform.position;
                 Vector3 linePos = new Vector3(pos.x, pos.y, -0.5f);
                 _line.SetPosition(i, linePos);
+                _dragTiles[i].GetComponent<HexTile>().selected = true;
             }
         }
     }
@@ -112,7 +120,7 @@ public class PlayUI : MonoBehaviour
 
         float minDist = Mathf.Infinity;
         Vector3 currentPos = _dragFinger.GetWorldPosition(1f);
-        foreach (GameObject tile in _gameboard.GetComponent<TileGridController>().AllTilesAsGameObject())
+        foreach (GameObject tile in _gameboard.GetComponent<HexGrid>().AllTilesAsGameObject())
         {
             float dist = Vector3.Distance(tile.transform.position, currentPos);
             if (dist < minDist)
@@ -261,6 +269,11 @@ public class PlayUI : MonoBehaviour
                 _selectedUI2 = null;
             }
         }
+
+        if (_gridController) { 
+            foreach (HexTile tile in _gridController.AllTilesAsHexTile())
+                tile.selected = false;
+        }
     }
 
     void Combo ()
@@ -268,9 +281,9 @@ public class PlayUI : MonoBehaviour
         int count = 0;
         int totalCount = _dragTiles.Count;
 
-        if (totalCount >= 5)
+        if (totalCount >= Constants.BoosterOneThreshhold)
         {
-            BaseTile tile = _dragTiles[_dragTiles.Count - 1].GetComponent<BaseTile>();
+            HexTile tile = _dragTiles[_dragTiles.Count - 1].GetComponent<HexTile>();
             _gridController.CreateBoosterAt(tile, totalCount, tile.type.Type);
         }
 
@@ -281,7 +294,7 @@ public class PlayUI : MonoBehaviour
             _gridController.DestroyTile(go, _curPlayer, count, totalCount);
         }
         //RootController.Instance.NextPlayer(_curPlayer.playerNumber).ReceiveDamage(_dragTiles.Count);
-        _curPlayer.FillPower(_dragTiles[0].GetComponent<BaseTile>().type.Type, _dragTiles.Count);
+        _curPlayer.FillPower(_dragTiles[0].GetComponent<HexTile>().type.Type, _dragTiles.Count);
         RootController.Instance.NextPlayer(_curPlayer.playerNumber).exploding = false;
 
         EndTurn();

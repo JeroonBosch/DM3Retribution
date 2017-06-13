@@ -1,13 +1,13 @@
 fileFormatVersion: 2
-guid: 1a6f63009678e43489b9e6241fa6b366
-timeCreated: 1497339694
+guid: 47f17cc1493c81f4192424dcf295d420
+timeCreated: 1497339702
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: TilesHexa128x128_0
-    21300002: TilesHexa128x128_1
-    21300004: TilesHexa128x128_2
-    21300006: TilesHexa128x128_3
+    21300000: TilesHexaSelected128x128_0
+    21300002: TilesHexaSelected128x128_1
+    21300004: TilesHexaSelected128x128_2
+    21300006: TilesHexaSelected128x128_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -90,7 +90,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TilesHexa128x128_0
+      name: TilesHexaSelected128x128_0
       rect:
         serializedVersion: 2
         x: 8
@@ -103,7 +103,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TilesHexa128x128_1
+      name: TilesHexaSelected128x128_1
       rect:
         serializedVersion: 2
         x: 136
@@ -116,7 +116,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TilesHexa128x128_2
+      name: TilesHexaSelected128x128_2
       rect:
         serializedVersion: 2
         x: 264
@@ -129,7 +129,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TilesHexa128x128_3
+      name: TilesHexaSelected128x128_3
       rect:
         serializedVersion: 2
         x: 392

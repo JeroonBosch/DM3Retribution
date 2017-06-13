@@ -100,4 +100,36 @@ public class TileTypes
             return Resources.LoadAll<Sprite>("Images/TilesSpecial128x128")[0];
         }
     }
+
+    //Hex
+    public Sprite HexSprite
+    {
+        get
+        {
+            if (m_type == ESubState.yellow)
+                return Resources.LoadAll<Sprite>("Images/TilesHexa128x128")[0];
+            else if (m_type == ESubState.blue)
+                return Resources.LoadAll<Sprite>("Images/TilesHexa128x128")[1];
+            else if (m_type == ESubState.green)
+                return Resources.LoadAll<Sprite>("Images/TilesHexa128x128")[2];
+            else if (m_type == ESubState.red)
+                return Resources.LoadAll<Sprite>("Images/TilesHexa128x128")[3];
+            return Resources.LoadAll<Sprite>("Images/TilesHexa128x128")[0];
+        }
+    }
+    public Sprite HexSpriteSelected
+    {
+        get
+        {
+            if (m_type == ESubState.yellow)
+                return Resources.LoadAll<Sprite>("Images/TilesHexaSelected128x128")[0];
+            else if (m_type == ESubState.blue)
+                return Resources.LoadAll<Sprite>("Images/TilesHexaSelected128x128")[1];
+            else if (m_type == ESubState.green)
+                return Resources.LoadAll<Sprite>("Images/TilesHexaSelected128x128")[2];
+            else if (m_type == ESubState.red)
+                return Resources.LoadAll<Sprite>("Images/TilesHexaSelected128x128")[3];
+            return Resources.LoadAll<Sprite>("Images/TilesHexaSelected128x128")[0];
+        }
+    }
 }
