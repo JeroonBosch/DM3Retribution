@@ -154,6 +154,29 @@ public class HexGrid : MonoBehaviour {
         }
         destructionQueue.Add(tile.GetComponent<HexTile>());
         tile.GetComponent<HexTile>().PromptDestroy(destructionQueue, removeFromList, destroyedBy, count, totalCount);
+
+        if (tile.GetComponent<BoosterOneHexTile>())
+        {
+            GameObject explosion = Instantiate(Resources.Load("BoosterOneExplosion")) as GameObject;
+            explosion.transform.SetParent(tile.transform.parent.parent.parent);
+            explosion.transform.position = tile.transform.position;
+            Destroy(explosion, 0.64f);
+        }
+
+        if (tile.GetComponent<BoosterTwoHexTile>())
+        {
+            GameObject explosion = Instantiate(Resources.Load("BoosterTwoExplosion")) as GameObject;
+            explosion.transform.SetParent(tile.transform.parent.parent.parent);
+            explosion.transform.position = tile.transform.position;
+            Destroy(explosion, 0.64f);
+        }
+        if (tile.GetComponent<BoosterThreeHexTile>())
+        {
+            GameObject explosion = Instantiate(Resources.Load("BoosterThreeExplosion")) as GameObject;
+            explosion.transform.SetParent(tile.transform.parent.parent.parent);
+            explosion.transform.localPosition = new Vector3(0f, 0f, 10f);
+            Destroy(explosion, 0.64f);
+        }
     }
 
     public void CreateBoosterAt(HexTile tile, int totalCount, TileTypes.ESubState requestedType)
