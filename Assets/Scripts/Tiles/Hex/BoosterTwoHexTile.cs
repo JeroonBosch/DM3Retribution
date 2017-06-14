@@ -19,10 +19,18 @@ public class BoosterTwoHexTile : HexTile
     {
         base.Update();
         if (_type.Type != _originalType)
+        {
             _image.sprite = type.HexSprite;
+            _originalType = _type.Type;
+        }
     }
 
-    public List<HexTile> OtherTilesToExplode(HexGrid grid)
+    public new List<HexTile> OtherTilesToExplode(HexGrid grid)
+    {
+        return OtherTilesToExplodeAtPosition(grid, x, y, 1f);
+    }
+
+    protected override List<HexTile> OtherTilesToExplodeAtPosition(HexGrid grid, float x, float y, float radius)
     {
         List<HexTile> toDestroy = new List<HexTile>();
 
@@ -35,7 +43,7 @@ public class BoosterTwoHexTile : HexTile
             float py = i;
             positions.Add(new Vector2(px, py));
         }
-        float diag1Start = Mathf.Floor((y - x * 0.5f) + 0.5f * oddx);
+        float diag1Start = Mathf.Floor((y - x * 0.5f) + 0.5f + 0.5f * oddx);
         for (int i = 0; i < Constants.gridSizeVertical; i++) //Diag.1
         {
             float px = i;
@@ -43,7 +51,7 @@ public class BoosterTwoHexTile : HexTile
             if (Exists(px, py))
                 positions.Add(new Vector2(px, py));
         }
-        float diag2Start = Mathf.Floor((y + x * 0.5f) + 0.5f * oddx);
+        float diag2Start = Mathf.Floor((y + x * 0.5f) + 0.5f + 0.5f * oddx);
         for (int i = 0; i < Constants.gridSizeVertical; i++) //Diag.2
         {
             float px = i;
@@ -58,6 +66,14 @@ public class BoosterTwoHexTile : HexTile
             HexTile baseTile = grid.FindHexTileAtPosition(positions[i]);
             if (baseTile && !baseTile.isBeingDestroyed)
                 toDestroy.Add(baseTile);
+        }
+
+        List<HexTile> adjacentInRadius = grid.FindAdjacentHexTiles(new Vector2(x, y), radius);
+        foreach (HexTile tile in adjacentInRadius)
+        {
+            if (tile && !tile.isBeingDestroyed)
+                if (!toDestroy.Contains(tile) && !(tile.x == x && tile.y == y))
+                    toDestroy.Add(tile);
         }
 
 

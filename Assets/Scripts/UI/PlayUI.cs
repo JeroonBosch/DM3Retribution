@@ -18,6 +18,7 @@ public class PlayUI : MonoBehaviour
 
     private Lean.Touch.LeanFinger _dragFinger;
     private List<GameObject> _dragTiles;
+    private List<HexTile> _destructionPrediction;
     private LineRenderer _line;
 
     private float _timer;
@@ -38,6 +39,7 @@ public class PlayUI : MonoBehaviour
         _player2 = _canvas.Find("Player2");
         _line = _canvas.GetComponent<LineRenderer>();
         _dragTiles = new List<GameObject>();
+        _destructionPrediction = new List<HexTile>();
 
         SetColor(_player1, 0);
         SetColor(_player2, 1);
@@ -104,14 +106,119 @@ public class PlayUI : MonoBehaviour
             foreach (HexTile tile in _gridController.AllTilesAsHexTile())
                 tile.selected = false;
 
-            for (int i = 0; i < _dragTiles.Count; i++)
+            GetDestructionPrediction();
+        }
+    }
+
+    private void GetDestructionPrediction()
+    {
+        _destructionPrediction.Clear();
+        for (int i = 0; i < _dragTiles.Count; i++)
+        {
+            Vector3 pos = _dragTiles[i].transform.position;
+            Vector3 linePos = new Vector3(pos.x, pos.y, -0.5f);
+            _line.SetPosition(i, linePos);
+            _destructionPrediction.Add(_dragTiles[i].GetComponent<HexTile>());
+        }
+
+        float boosterCount = 0;
+        int boosterType = 0;
+        HexTile sampleBooster = null;
+        for (int i = 0; i < _destructionPrediction.Count; i++)
+        {
+            _destructionPrediction[i].GetComponent<HexTile>().selected = true;
+
+            if (_destructionPrediction[i].GetComponent<BoosterThreeHexTile>())
             {
-                Vector3 pos = _dragTiles[i].transform.position;
-                Vector3 linePos = new Vector3(pos.x, pos.y, -0.5f);
-                _line.SetPosition(i, linePos);
-                _dragTiles[i].GetComponent<HexTile>().selected = true;
+                boosterCount++;
+                if (boosterType < 3)
+                {
+                    boosterType = 3;
+                    sampleBooster = _destructionPrediction[i];
+                }
+            }
+            else if (_destructionPrediction[i].GetComponent<BoosterTwoHexTile>())
+            {
+                boosterCount++;
+                if (boosterType < 2)
+                {
+                    boosterType = 2;
+                    sampleBooster = _destructionPrediction[i];
+                }
+            }
+            else if (_destructionPrediction[i].GetComponent<BoosterOneHexTile>())
+            {
+                boosterCount++;
+                if (boosterType < 1)
+                {
+                    boosterType = 1;
+                    sampleBooster = _destructionPrediction[i];
+                }
+            }
+
+        }
+        int last = _destructionPrediction.Count - 1;
+        if (boosterType == 3)
+            sampleBooster.gameObject.GetComponent<BoosterThreeHexTile>().PredictExplosion(_gameboard.GetComponent<HexGrid>(), boosterCount, _destructionPrediction[last].xy);
+        if (boosterType == 2)
+            sampleBooster.gameObject.GetComponent<BoosterTwoHexTile>().PredictExplosion(_gameboard.GetComponent<HexGrid>(), boosterCount, _destructionPrediction[last].xy);
+        if (boosterType == 1)
+            sampleBooster.gameObject.GetComponent<BoosterOneHexTile>().PredictExplosion(_gameboard.GetComponent<HexGrid>(), boosterCount, _destructionPrediction[last].xy);
+
+        bool affectedTilesChanged = true;
+        int tries = 30;
+        for (int i = 0; i < tries; i++)
+        {
+            List<HexTile> affectedTiles = _gridController.AllSelectedTilesAsHexTile();
+            affectedTilesChanged = IterateCollateral(affectedTiles, affectedTiles.Count);
+            if (!affectedTilesChanged)
+                return;
+        }
+    }
+
+    private bool IterateCollateral (List<HexTile> affectedTiles, int prevCount)
+    {
+        bool affectedTilesChanged = true;
+
+        foreach (HexTile tile in affectedTiles)
+        {
+            if (!_dragTiles.Contains(tile.gameObject))
+            {
+                if (tile.GetComponent<BoosterOneHexTile>())
+                {
+                    List<HexTile> toDestroyAlso = tile.GetComponent<BoosterOneHexTile>().OtherTilesToExplode(_gridController);
+                    foreach (HexTile destroyTile in toDestroyAlso)
+                    {
+                        if (destroyTile.selected == false)
+                            destroyTile.selected = true;
+                    }
+                }
+                if (tile.GetComponent<BoosterTwoHexTile>())
+                {
+                    List<HexTile> toDestroyAlso = tile.GetComponent<BoosterTwoHexTile>().OtherTilesToExplode(_gridController);
+                    foreach (HexTile destroyTile in toDestroyAlso)
+                    {
+                        if (destroyTile.selected == false)
+                            destroyTile.selected = true;
+                    }
+                }
+                if (tile.GetComponent<BoosterThreeHexTile>())
+                {
+                    List<HexTile> toDestroyAlso = tile.GetComponent<BoosterThreeHexTile>().OtherTilesToExplode(_gridController);
+                    foreach (HexTile destroyTile in toDestroyAlso)
+                    {
+                        if (destroyTile.selected == false)
+                            destroyTile.selected = true;
+                    }
+                }
             }
         }
+
+        List<HexTile> newAffectedTiles = _gridController.AllSelectedTilesAsHexTile();
+        if (newAffectedTiles.Count == prevCount)
+            affectedTilesChanged = false;
+
+        return affectedTilesChanged;
     }
 
     private GameObject FindNearestTile()
@@ -288,12 +395,19 @@ public class PlayUI : MonoBehaviour
         }
 
         _gridController.EmptyDestructionQueue();
+        GetDestructionPrediction();
+        List<HexTile> toDestroyAlso = _gridController.AllSelectedTilesAsHexTile();
         foreach (GameObject go in _dragTiles)
         {
             count++;
             _gridController.DestroyTile(go, _curPlayer, count, totalCount);
         }
-        //RootController.Instance.NextPlayer(_curPlayer.playerNumber).ReceiveDamage(_dragTiles.Count);
+        foreach (HexTile tile in toDestroyAlso)
+        {
+            if (!_dragTiles.Contains(tile.gameObject))
+                _gridController.DestroyTile(tile.gameObject, _curPlayer, totalCount, totalCount);
+        }
+
         _curPlayer.FillPower(_dragTiles[0].GetComponent<HexTile>().type.Type, _dragTiles.Count);
         RootController.Instance.NextPlayer(_curPlayer.playerNumber).exploding = false;
 

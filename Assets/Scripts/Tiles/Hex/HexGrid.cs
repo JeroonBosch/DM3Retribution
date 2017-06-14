@@ -5,8 +5,7 @@ using UnityEngine;
 public class HexGrid : MonoBehaviour {
     public List<HexRow> rows;
     private List<HexTile> destructionQueue;
-    private List<HexTile> destructionPrediction;
-    private bool isDestroying = false;
+    //private bool isDestroying = false;
 
     private Vector2 _boosterRequest = new Vector2(-1f, -1f);
     private TileTypes.ESubState _boosterType = TileTypes.ESubState.blue;
@@ -14,7 +13,6 @@ public class HexGrid : MonoBehaviour {
 
     private void Awake () {
         destructionQueue = new List<HexTile>();
-        destructionPrediction = new List<HexTile>();
         rows = new List<HexRow>();
     }
 
@@ -97,6 +95,21 @@ public class HexGrid : MonoBehaviour {
         return list;
     }
 
+    public List<HexTile> AllSelectedTilesAsHexTile()
+    {
+        List<HexTile> list = new List<HexTile>();
+        foreach (HexRow column in rows)
+        {
+            foreach (HexTile tile in column.tiles)
+            {
+                if (tile.selected)
+                    list.Add(tile);
+            }
+        }
+
+        return list;
+    }
+
     public HexTile FindHexTileAtPosition(Vector2 position)
     {
         List<HexTile> allTiles = AllTilesAsHexTile();
@@ -110,8 +123,9 @@ public class HexGrid : MonoBehaviour {
         List<HexTile> allTiles = AllTilesAsHexTile();
         HexTile centerTile = allTiles.Find(item => item.x == position.x && item.y == position.y);
         List<HexTile> targetTiles = new List<HexTile>();
-        foreach (HexTile tile in allTiles) { 
-            if (Mathf.Abs(centerTile.transform.position.x - tile.transform.position.x) < 55f * radius && Mathf.Abs(centerTile.transform.position.y - tile.transform.position.y) < 55f * radius)
+        foreach (HexTile tile in allTiles) {
+            //if (Mathf.Abs(centerTile.transform.position.x - tile.transform.position.x) < 55f * radius && Mathf.Abs(centerTile.transform.position.y - tile.transform.position.y) < 55f * radius)
+            if (Vector2.Distance(centerTile.transform.position, tile.transform.position) < 70f * radius)
                 targetTiles.Add(tile);
         }
 
@@ -127,7 +141,7 @@ public class HexGrid : MonoBehaviour {
 
     public void DestroyTile(GameObject tile, Player destroyedBy, int count, int totalCount)
     {
-        isDestroying = true;
+        //isDestroying = true;
 
         List<HexTile> removeFromList = null;
         foreach (HexRow column in rows)
@@ -140,48 +154,6 @@ public class HexGrid : MonoBehaviour {
         }
         destructionQueue.Add(tile.GetComponent<HexTile>());
         tile.GetComponent<HexTile>().PromptDestroy(destructionQueue, removeFromList, destroyedBy, count, totalCount);
-
-        if (tile.GetComponent<BoosterOneHexTile>())
-        {
-            GameObject explosion = Instantiate(Resources.Load("BoosterOneExplosion")) as GameObject;
-            explosion.transform.SetParent(tile.transform.parent.parent.parent);
-            explosion.transform.position = tile.transform.position;
-            Destroy(explosion, 0.64f);
-
-            List<HexTile> toDestroyAlso = tile.GetComponent<BoosterOneHexTile>().OtherTilesToExplode(this);
-            foreach (HexTile destroyTile in toDestroyAlso)
-            {
-                DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
-            }
-        }
-
-        if (tile.GetComponent<BoosterTwoHexTile>())
-        {
-            GameObject explosion = Instantiate(Resources.Load("BoosterTwoExplosion")) as GameObject;
-            explosion.transform.SetParent(tile.transform.parent.parent.parent);
-            explosion.transform.position = tile.transform.position;
-            Destroy(explosion, 0.64f);
-
-            List<HexTile> toDestroyAlso = tile.GetComponent<BoosterTwoHexTile>().OtherTilesToExplode(this);
-            foreach (HexTile destroyTile in toDestroyAlso)
-            {
-                DestroyTile(destroyTile.gameObject, destroyedBy, totalCount, totalCount);
-            }
-        }
-
-        if (tile.GetComponent<BoosterThreeHexTile>())
-        {
-            GameObject explosion = Instantiate(Resources.Load("BoosterThreeExplosion")) as GameObject;
-            explosion.transform.SetParent(tile.transform.parent.parent.parent);
-            explosion.transform.localPosition = new Vector3(0f, 0f, 10f);
-            Destroy(explosion, 0.64f);
-
-            List<HexTile> toDestroyAlso = tile.GetComponent<BoosterThreeHexTile>().OtherTilesToExplode(this);
-            foreach (HexTile destroyTile in toDestroyAlso)
-            {
-                DestroyTile(destroyTile.gameObject, destroyedBy, (int)Mathf.Max(totalCount, 12f), (int)Mathf.Max(totalCount, 12f));
-            }
-        }
     }
 
     public void CreateBoosterAt(HexTile tile, int totalCount, TileTypes.ESubState requestedType)

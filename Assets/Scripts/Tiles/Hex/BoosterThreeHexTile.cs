@@ -19,10 +19,18 @@ public class BoosterThreeHexTile : HexTile
     {
         base.Update();
         if (_type.Type != _originalType)
+        {
             _image.sprite = type.HexSprite;
+            _originalType = _type.Type;
+        }
     }
 
-    public List<HexTile> OtherTilesToExplode(HexGrid grid)
+    public new List<HexTile> OtherTilesToExplode(HexGrid grid)
+    {
+        return OtherTilesToExplodeAtPosition(grid, x, y, 1f);
+    }
+
+    protected override List<HexTile> OtherTilesToExplodeAtPosition(HexGrid grid, float x, float y, float radius)
     {
         List<HexTile> toDestroy = new List<HexTile>();
 
@@ -60,8 +68,8 @@ public class BoosterThreeHexTile : HexTile
                 toDestroy.Add(baseTile);
         }
 
-        List<HexTile> adjacentInRadius = grid.FindAdjacentHexTiles(new Vector2(x, y), 2f);
-        Debug.Log(adjacentInRadius.Count);
+        float newRadius = Mathf.Max(2f, radius);
+        List<HexTile> adjacentInRadius = grid.FindAdjacentHexTiles(new Vector2(x, y), newRadius);
         foreach (HexTile tile in adjacentInRadius)
         {
             if (tile && !tile.isBeingDestroyed)

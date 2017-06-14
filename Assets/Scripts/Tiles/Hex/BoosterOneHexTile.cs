@@ -19,32 +19,28 @@ public class BoosterOneHexTile : HexTile
     {
         base.Update();
         if (_type.Type != _originalType)
+        {
             _image.sprite = type.HexSprite;
+            _originalType = _type.Type;
+        }
+            
     }
 
-    public List<HexTile> OtherTilesToExplode(HexGrid grid) {
+    public new List<HexTile> OtherTilesToExplode(HexGrid grid)
+    {
+        return OtherTilesToExplodeAtPosition(grid, x, y, 1f);
+    }
+
+    protected override List<HexTile> OtherTilesToExplodeAtPosition(HexGrid grid, float x, float y, float radius) {
         List<HexTile> toDestroy = new List<HexTile>();
 
-        Vector2[] positions;
-        positions = new Vector2[6];
-
-        Debug.Log("Area destruction around " + x + ", " + y);
-        //bool odd = (y % 2 == 1);
-        positions[0] = new Vector2(x - 1f, y);
-        positions[1] = new Vector2(x + 1f, y);
-        positions[2] = new Vector2(x, y - 1f);
-        positions[3] = new Vector2(x, y + 1f);
-        positions[4] = new Vector2(x + 1f, y - 1f);
-        positions[5] = new Vector2(x - 1f, y - 1f);
-
-        for (int i = 0; i < positions.Length; i++)
+        List<HexTile> adjacentInRadius = grid.FindAdjacentHexTiles(new Vector2(x, y), radius);
+        foreach (HexTile tile in adjacentInRadius)
         {
-            Debug.Log("Destroying: " + positions[i].x + " | " + positions[i].y);
-            HexTile baseTile = grid.FindHexTileAtPosition(positions[i]);
-            if (baseTile && !baseTile.isBeingDestroyed)
-                toDestroy.Add(baseTile);
+            if (tile && !tile.isBeingDestroyed)
+                if (!toDestroy.Contains(tile) && !(tile.x == x && tile.y == y))
+                    toDestroy.Add(tile);
         }
-        
 
         return toDestroy;
     }

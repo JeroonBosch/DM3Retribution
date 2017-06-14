@@ -91,6 +91,27 @@ public class HexTile : MonoBehaviour {
         }
     }
 
+    public void PredictExplosion(HexGrid grid, float radius, Vector2 position)
+    {
+        List<HexTile> predictList = OtherTilesToExplodeAtPosition(grid, position.x, position.y, radius);
+        foreach (HexTile tile in predictList)
+        {
+            tile.selected = true;
+        }
+    }
+
+    public List<HexTile> OtherTilesToExplode(HexGrid grid)
+    {
+        List<HexTile> toDestroy = new List<HexTile>();
+        return toDestroy;
+    }
+
+    protected virtual List<HexTile> OtherTilesToExplodeAtPosition(HexGrid grid, float x, float y, float radius)
+    {
+        List<HexTile> toDestroy = new List<HexTile>();
+        return toDestroy;
+    }
+
     public void PromptDestroy(List<HexTile> destructionQueue, List<HexTile> removeFromList, Player destroyedBy, int count, int totalCount)
     {
         if (removeFromList != null)

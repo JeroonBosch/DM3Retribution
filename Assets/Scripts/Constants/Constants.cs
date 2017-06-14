@@ -19,6 +19,6 @@ public static class Constants {
     public const int AmountOfColors = 4;
 
     public const int BoosterOneThreshhold = 5;
-    public const int BoosterTwoThreshhold = 10;
-    public const int BoosterThreeThreshhold = 15;
+    public const int BoosterTwoThreshhold = 9;
+    public const int BoosterThreeThreshhold = 12;
 }

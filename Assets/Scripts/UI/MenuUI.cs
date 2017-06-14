@@ -70,13 +70,13 @@ public class MenuUI : MonoBehaviour
 
     public void Handle_SelectColor(int index)
     {
-        int playerNumber = 0;
+        /*int playerNumber = 0;
         if (EventSystem.current.currentSelectedGameObject.tag == "Player0_UI")
             playerNumber = 0;
         else
             playerNumber = 1;
 
-        Player player = RootController.Instance.GetPlayer(playerNumber);
+        Player player = RootController.Instance.GetPlayer(playerNumber);*/
         //player.SelectColorByIndex(index);
     }
 

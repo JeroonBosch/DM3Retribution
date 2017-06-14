@@ -14,7 +14,7 @@ public class TileGridController : MonoBehaviour {
     private string _boosterPath = "BoosterOneTile";
 
     private List<BaseTile> destructionQueue;
-    private bool isDestroying = false;
+    //private bool isDestroying = false;
 
     private void Awake()
     {
@@ -119,7 +119,7 @@ public class TileGridController : MonoBehaviour {
 
     public void DestroyTile(GameObject tile, Player destroyedBy, int count, int totalCount)
     {
-        isDestroying = true;
+        //isDestroying = true;
 
         List<BaseTile> removeFromList = null;
         foreach (TileColumn column in columns)
