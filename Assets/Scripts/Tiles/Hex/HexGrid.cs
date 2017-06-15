@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class HexGrid : MonoBehaviour {
+public class HexGrid : NetworkBehaviour
+{
     public List<HexRow> rows;
     private List<HexTile> destructionQueue;
     //private bool isDestroying = false;
@@ -18,7 +20,12 @@ public class HexGrid : MonoBehaviour {
 
     private void Start()
     {
-        //int gridSize = Constants.gridSizeHorizontal * Constants.gridSizeVertical;
+        CreateGrid();
+    }
+
+    private void CreateGrid()
+    {
+
         rows.Clear();
 
         for (int x = 0; x < Constants.gridSizeVertical; x++)
@@ -29,6 +36,9 @@ public class HexGrid : MonoBehaviour {
             rowObject.transform.SetParent(this.transform, false);
             rowObject.name = "Row " + x;
             rows.Add(rowObject.GetComponent<HexRow>());
+
+            //RootController.Instance.SpawnOnServer(rowObject);
+
             for (int y = 0; y < Constants.gridSizeHorizontal; y++)
             {
                 GameObject newTile = Instantiate(Resources.Load("HexTile")) as GameObject;
@@ -41,6 +51,8 @@ public class HexGrid : MonoBehaviour {
                 newTile.name = "Tile (" + x + "," + y + ")"; //F.e. Tile (0,7)
                 tile.InitRandom();
 
+                //RootController.Instance.SpawnOnServer(newTile);
+
                 row.tiles.Add(tile);
             }
         }
@@ -48,10 +60,21 @@ public class HexGrid : MonoBehaviour {
 
     private void LateUpdate()
     {
+        //Server-side only.
+        if (!Network.isServer)
+        {
+            return;
+        }
+
         if (rows != null)
         {
             foreach (HexRow row in rows)
             {
+                //RootController.Instance.SetRPCParent(row.gameObject.name, row.gameObject, gameObject, false);
+
+                foreach (HexTile tile in row.tiles)
+                    RpcUpdateTileType(tile.xy, tile.type.Type);
+
                 if (row.tiles.Count < Constants.gridSizeHorizontal)
                     Refill(row, "left");
             }
@@ -65,6 +88,13 @@ public class HexGrid : MonoBehaviour {
                 _boosterRequest = new Vector2(-1f, -1f);
             }
         }
+    }
+
+    [ClientRpc]
+    void RpcUpdateTileType (Vector2 xy, TileTypes.ESubState type)
+    {
+        Debug.Log(xy.x + "|" + xy.x + " setting to " + type);
+        FindHexTileAtPosition(xy).SetType(type);
     }
 
     public List<GameObject> AllTilesAsGameObject()
@@ -238,7 +268,7 @@ public class HexGrid : MonoBehaviour {
             row.tiles.RemoveAt(index);
             Destroy(targetTile.gameObject);
             row.tiles.Insert(index, newTile.GetComponent<HexTile>());
-            newTile.GetComponent<HexTile>().type.Type = requestedType;
+            newTile.GetComponent<HexTile>().curType = requestedType;
             newTile.transform.SetSiblingIndex(index);
             newTile.GetComponent<HexTile>().xy = new Vector2(row.number, index);
             newTile.transform.name = "Tile (" + row.number + ", " + index + ")"; //F.e. Tile (0,7)

@@ -31,10 +31,9 @@ public class PlayUI : MonoBehaviour
     private void Start()
     {
         _canvas = transform.Find("Canvas");
-        //_gameboard = _canvas.Find("GameBoard");
-        //_gridController = _gameboard.GetComponent<TileGridController>();
         _gameboard = _canvas.Find("HexBoard");
         _gridController = _gameboard.GetComponent<HexGrid>();
+
         _player1 = _canvas.Find("Player1");
         _player2 = _canvas.Find("Player2");
         _line = _canvas.GetComponent<LineRenderer>();
@@ -290,6 +289,9 @@ public class PlayUI : MonoBehaviour
                 {
                     if (result.gameObject.name.Contains("Color"))
                         _selectedUI = result.gameObject;
+
+                    if (result.gameObject.tag == "Icon")
+                        _selectedUI = result.gameObject.transform.parent.gameObject;
                 }
 
                 if (_selectedUI.tag == "Tile")
@@ -302,8 +304,6 @@ public class PlayUI : MonoBehaviour
                     if ((_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4()) && !_boosterUsed)
                     {
                         _selectedUI.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
-                        //if (_selectedUI.name != "Color1") //not blue
-                            //EndTurn();
                         _boosterUsed = true;
                     } else
                     {

@@ -17,6 +17,8 @@ public class HexTile : MonoBehaviour {
     protected TileTypes _type;
     public TileTypes type { get { return _type; } }
 
+    public TileTypes.ESubState curType;
+
     protected float _destroyCounter = 0;
     protected bool _destroyCounting = false;
     public bool isBeingDestroyed { get { return _destroyCounting; } }
@@ -39,6 +41,7 @@ public class HexTile : MonoBehaviour {
     {
         _image.sprite = _type.HexSprite;
         MoveToPosition();
+        curType = _type.Type;
     }
 
     public void InitRandom()
@@ -46,6 +49,16 @@ public class HexTile : MonoBehaviour {
         _type.Type = TileTypes.ESubState.yellow + Random.Range(0, Constants.AmountOfColors);
         Init();
     }
+
+    public void SetType(TileTypes.ESubState setType)
+    {
+        curType = setType;
+        _type.Type = setType;
+        _image.sprite = _type.HexSprite;
+        Debug.Log(gameObject.name + " is now " + setType);
+    }
+
+
 
     protected void MoveToPosition()
     {

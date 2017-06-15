@@ -2,12 +2,19 @@
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
-public class RootController : MonoBehaviour {
+public class RootController : NetworkBehaviour
+{
     private static RootController _instance; //Singleton
     private AudioSource _audio;
     private bool _controlsEnabled = true;
+
+    
     private StateBase _stateController;
+    [SyncVar(hook = "OnCurrentStateChanged")]
+    public StateBase.ESubState _curState;
+
     private List<Player> players;
     private Player currentPlayer;
     private Player _winnerPlayer;
@@ -33,14 +40,67 @@ public class RootController : MonoBehaviour {
         _instance = this;
         _stateController = new StateBase();
         _stateController.Start() ;
+        _curState = _stateController.State;
         _audio = GameObject.Find("Audio").GetComponent<AudioSource>();
         players = new List<Player>();
         _winnerPlayer = null;
     }
 
+    public bool MultiplayerActive()
+    {
+        return NetworkServer.active;
+    }
+
+    public bool MultiplayerIsServer ()
+    {
+        if (NetworkServer.active)
+            return isServer;
+        else
+            return false;
+    }
+
+    public bool MultiplayerIsClient()
+    {
+        if (NetworkServer.active)
+            return isLocalPlayer;
+        else
+            return false;
+    }
+
+    public void SpawnOnServer(GameObject obj)
+    {
+        if (NetworkServer.active)
+            NetworkServer.Spawn(obj);
+    }
+
+    public void SetRPCParent(string name, GameObject obj, GameObject parent, bool worldPos)
+    {
+        RpcSetParentOfObject(name, obj, parent, worldPos);
+    }
+
+    [ClientRpc]
+    void RpcSetParentOfObject(string name, GameObject obj, GameObject parent, bool worldPos)
+    {
+        obj.name = name;
+        if (parent)
+            obj.transform.SetParent(parent.transform, worldPos);
+        else
+            Debug.Log("obj does not exist");
+    }
+
     public StateBase StateController()
     {
         return _stateController;
+    }
+
+    public void OnStateChanged (StateBase.ESubState newState)
+    {
+        _curState = newState;
+    }
+
+    private void OnCurrentStateChanged(StateBase.ESubState newState)
+    {
+        _stateController.State = newState;
     }
 
     public AudioSource AudioController()

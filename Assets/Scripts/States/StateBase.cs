@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class StateBase  {
 	
@@ -20,21 +21,22 @@ public class StateBase  {
     {
         Time.timeScale = 1.0f;
         menuState.SetActive(true);
-        playState.SetActive(false);
+        //playState.SetActive(false);
+        playState.transform.Find("Canvas").GetComponent<Canvas>().enabled = false;
         endState.SetActive(false);
     }
     private void Playing()
 	{
 		Time.timeScale = 1.0f;
         menuState.SetActive(false);
-        playState.SetActive(true);
+        playState.transform.Find("Canvas").GetComponent<Canvas>().enabled = true;
         endState.SetActive(false);
     }
 	private void EndScreen()
 	{
         Time.timeScale = 1.0f;
         menuState.SetActive(false);
-        playState.SetActive(false);
+        playState.transform.Find("Canvas").GetComponent<Canvas>().enabled = false;
         endState.SetActive(true);
     }
 
@@ -78,7 +80,9 @@ public class StateBase  {
 		}
 		set
 		{
-			if ( value == ESubState.Pause )
+            RootController.Instance.OnStateChanged(value);
+
+            if ( value == ESubState.Pause )
 			{
 				Pause();
 			}
