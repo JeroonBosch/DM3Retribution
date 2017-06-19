@@ -67,8 +67,6 @@ public class MenuUI : StateUI
     {
         if (RootController.Instance.MultiplayerIsServer())
             RootController.Instance.StateController().State = StateBase.ESubState.Playing;
-        else
-            RootController.Instance.CmdEngageClicked();
     }
 
     public void Handle_SelectColor(int index)

@@ -91,33 +91,35 @@ public class StateBase  {
 		}
 		set
 		{
-            RootController.Instance.OnStateChanged(value);
+            if (m_CurrentState != value) { 
+                RootController.Instance.OnStateChanged(value);
 
-            if ( value == ESubState.Pause )
-			{
-				Pause();
-			}
-			else if ( value == ESubState.Playing )
-			{
-				Playing();
-			}
-			else if ( value == ESubState.Menu )
-			{
-                Menu();
-			}
-			else if ( value == ESubState.LevelWon )
-			{
-                EndScreen();
-            }
-			else if ( value == ESubState.LevelLost )
-			{
-                EndScreen();
-            }
+                if ( value == ESubState.Pause )
+			    {
+				    Pause();
+			    }
+			    else if ( value == ESubState.Playing )
+			    {
+				    Playing();
+			    }
+			    else if ( value == ESubState.Menu )
+			    {
+                    Menu();
+			    }
+			    else if ( value == ESubState.LevelWon )
+			    {
+                    EndScreen();
+                }
+			    else if ( value == ESubState.LevelLost )
+			    {
+                    EndScreen();
+                }
 
-			m_CurrentState = value;
+			    m_CurrentState = value;
 			
-			Debug.Log( this );
-		}
+			    Debug.Log( this );
+            }
+        }
 	}
 	
 	#endregion

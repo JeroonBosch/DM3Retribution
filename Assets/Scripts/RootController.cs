@@ -101,12 +101,14 @@ public class RootController : NetworkBehaviour
 
     public void OnStateChanged (StateBase.ESubState newState)
     {
-        _curState = newState;
+        if (_curState != newState)
+            _curState = newState;
     }
 
     private void OnCurrentStateChanged(StateBase.ESubState newState)
     {
-        _stateController.State = newState;
+        if (_stateController.State != newState)
+            _stateController.State = newState;
     }
 
     public AudioSource AudioController()
@@ -161,10 +163,31 @@ public class RootController : NetworkBehaviour
         currentPlayer = player1;
     }
 
-    /*public Settings GetSettings()
+    public PlayerEntity GetPlayerEntity ()
     {
-        return _settings;
-    }*/
+        PlayerEntity entity = null;
+        foreach (GameObject playerObj in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            PlayerEntity player = playerObj.GetComponent<PlayerEntity>();
+            if (player != null) { 
+                if (player.CheckIfLocal())
+                    entity = player;
+            }
+        }
+            
+        return entity;
+    }
+
+    public List<PlayerEntity> GetPlayerEntities()
+    {
+        List<PlayerEntity> list = new List<PlayerEntity>();
+        foreach (GameObject playerObj in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            list.Add(playerObj.GetComponent<PlayerEntity>());
+        }
+
+        return list;
+    }
 
     public Player GetPlayer(int number)
     {

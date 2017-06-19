@@ -68,8 +68,13 @@ public class PlayUI : StateUI
 
     protected override void ActiveConsequences()
     {
-        if (RootController.Instance.MultiplayerIsServer())
+        if (RootController.Instance.MultiplayerIsServer()) { 
             _gridController.SyncAllTiles();
+            //RootController.Instance.SpawnPlayerEntity();
+            //RootController.Instance.GetPlayerEntity().SetParent(_canvas.transform);
+            foreach (PlayerEntity player in RootController.Instance.GetPlayerEntities())
+                player.SetParent(_canvas.transform);
+        }   
     }
 
     private void FixedUpdate()
