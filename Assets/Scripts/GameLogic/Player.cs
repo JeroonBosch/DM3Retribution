@@ -145,7 +145,12 @@ public class Player : ScriptableObject
 
         if (active)
         {
-            transform.localScale = new Vector3(1f, 1f, 1f);
+            Debug.Log((this == RootController.Instance.GetMyPlayer()) + " | " + (RootController.Instance.IsMyTurn()) + " | my player no.: " + RootController.Instance.GetMyPlayer().playerNumber);
+            if (this == RootController.Instance.GetMyPlayer())
+                transform.localScale = new Vector3(1f, 1f, 1f);
+            else
+                transform.localScale = new Vector3(.7f, .7f, .7f);
+
             portrait.gameObject.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
 
             if (CheckPowerLevel_1())
@@ -360,5 +365,16 @@ public class Player : ScriptableObject
                 return color;
         }
         return returnTransform;
+    }
+
+    public void SwapPortraitPositions()
+    {
+        Transform otherContainer = RootController.Instance.GetPlayer(0).transform;
+
+        Vector3 containerPosition = transform.localPosition;
+        Vector3 otherContainerPosition = otherContainer.localPosition;
+
+        transform.localPosition = otherContainerPosition;
+        otherContainer.localPosition = containerPosition;
     }
 }

@@ -22,7 +22,9 @@ public class FingerTracker : NetworkBehaviour
     {
         if (fingerDown)
         {
+            //RectTransform canvas = transform.parent.GetComponent<RectTransform>();
             transform.position = trackFinger.GetLastWorldPosition(1f, Camera.current);
+            //transform.localPosition = new Vector2(canvas.sizeDelta.x - transform.localPosition.x, canvas.sizeDelta.y - transform.localPosition.y);
         }
     }
 

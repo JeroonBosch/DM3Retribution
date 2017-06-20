@@ -21,6 +21,12 @@ public class HexGrid : NetworkBehaviour
     private void Start()
     {
         CreateGrid();
+
+    }
+
+    public void RotateBoard()
+    {
+        GetComponent<RectTransform>().Rotate(new Vector3(0, 0, 180));
     }
 
     private void CreateGrid()

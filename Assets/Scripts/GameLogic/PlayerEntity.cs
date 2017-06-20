@@ -11,11 +11,21 @@ public class PlayerEntity : NetworkBehaviour
     private Image image;
     public int number;
 
+    private HexGrid grid;
+
     private void Start()
     {
         image = GetComponent<Image>();
-        gameObject.name = "PlayerEntity " + (RootController.Instance.GetPlayerEntities().Count - 1);
-        number = RootController.Instance.GetPlayerEntities().Count - 1;
+
+        //Debug.Log("Am I...? server " + RootController.Instance.isServer + " | " + isServer + ", do I have auth " + RootController.Instance.hasAuthority + " or localPlayer " + isLocalPlayer + " ?");
+        if ((isServer && isLocalPlayer) || (!isServer && !isLocalPlayer))
+        {
+            number = 0;
+        }
+        else
+            number = 1;
+
+        gameObject.name = "PlayerEntity " + number;
 
         if (RootController.Instance.GetPlayer(number).playerEntity != this)
             RootController.Instance.GetPlayer(number).playerEntity = this;
@@ -23,10 +33,15 @@ public class PlayerEntity : NetworkBehaviour
 
     private void Update()
     {
-        if (visibility && !isLocalPlayer)
+        if (visibility && !isLocalPlayer) // && RootController.Instance.GetCurrentPlayer().playerNumber != number
             image.enabled = true;
         else
             image.enabled = false;
+    }
+
+    public void GameStart ()
+    {
+        grid = GameObject.Find("HexBoard").GetComponent<HexGrid>();
     }
 
     private void OnEnable()
@@ -57,6 +72,22 @@ public class PlayerEntity : NetworkBehaviour
                 CmdOnFingerDown(fingerDown);
             }
         }
+    }
+
+    public void HandleSelectionData (List<HexTile> list)
+    {
+        foreach (HexTile tile in grid.AllTilesAsHexTile())
+            tile.selected = false;
+
+        foreach (HexTile tile in list)
+            CmdSendSelectionData(tile.xy);
+    }
+
+    [Command]
+    private void CmdSendSelectionData (Vector2 position)
+    {
+        Debug.Log(position);
+        grid.FindHexTileAtPosition(position).selected = true;
     }
 
     [Command]

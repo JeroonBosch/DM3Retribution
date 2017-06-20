@@ -49,6 +49,7 @@ public class PlayUI : StateUI
         RootController.Instance.GetPlayer(1).health = RootController.Instance.GetPlayer(1).settings.PlayerHealth;
 
         _curPlayer = RootController.Instance.GetPlayer(0);
+        RootController.Instance.GetPlayer(0).SetTimerActive(true);
         RootController.Instance.GetPlayer(1).SetTimerActive(false);
     }
 
@@ -75,7 +76,18 @@ public class PlayUI : StateUI
         }
 
         foreach (PlayerEntity player in RootController.Instance.GetPlayerEntities())
+        {
             player.SetParentUI(_canvas.transform);
+            player.GameStart();
+        }
+            
+
+        if (RootController.Instance.GetMyPlayer().playerNumber == 1)
+        {
+            _gridController.RotateBoard();
+            RootController.Instance.GetMyPlayer().SwapPortraitPositions();
+        }
+
     }
 
     private void FixedUpdate()
@@ -189,6 +201,8 @@ public class PlayUI : StateUI
             if (!affectedTilesChanged)
                 return;
         }
+
+        RootController.Instance.GetMyPlayerEntity().HandleSelectionData(_gridController.AllSelectedTilesAsHexTile());
     }
 
     private bool IterateCollateral (List<HexTile> affectedTiles, int prevCount)
@@ -288,79 +302,83 @@ public class PlayUI : StateUI
 
     void OnFingerDown(Lean.Touch.LeanFinger finger)
     {
-        if (RootController.Instance.ControlsEnabled() && finger.Index == 0)
+        if (RootController.Instance.ControlsEnabled() && RootController.Instance.IsMyTurn())
         {
-            _selectedUI = null;
-
-            GraphicRaycaster gRaycast = _canvas.GetComponent<GraphicRaycaster>();
-            PointerEventData ped = new PointerEventData(null);
-            ped.position = finger.GetSnapshotScreenPosition(1f);
-            List<RaycastResult> results = new List<RaycastResult>();
-            gRaycast.Raycast(ped, results);
-
-            if (results != null && results.Count > 0)
+            if (finger.Index == 0)
             {
-                //Remove non-matches.
-                foreach (RaycastResult result in results)
-                {
-                    if (result.gameObject.tag == "Player")
-                        results.Remove(result);
-                }
+                _selectedUI = null;
 
-                _selectedUI = results[0].gameObject;
+                GraphicRaycaster gRaycast = _canvas.GetComponent<GraphicRaycaster>();
+                PointerEventData ped = new PointerEventData(null);
+                ped.position = finger.GetSnapshotScreenPosition(1f);
+                List<RaycastResult> results = new List<RaycastResult>();
+                gRaycast.Raycast(ped, results);
 
-                foreach (RaycastResult result in results)
+                if (results != null && results.Count > 0)
                 {
-                    if (result.gameObject.name.Contains("Color"))
-                        _selectedUI = result.gameObject;
-
-                    if (result.gameObject.tag == "Icon")
-                        _selectedUI = result.gameObject.transform.parent.gameObject;
-                }
-
-                if (_selectedUI.tag == "Tile")
-                {
-                    _dragTiles.Clear();
-                    _dragFinger = finger;
-                }
-                if (_selectedUI.transform.parent == _curPlayer.transform)
-                {
-                    if ((_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4()) && !_boosterUsed)
+                    //Remove non-matches.
+                    foreach (RaycastResult result in results)
                     {
-                        _selectedUI.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
-                        _boosterUsed = true;
-                    } else
+                        if (result.gameObject.tag == "Player")
+                            results.Remove(result);
+                    }
+
+                    _selectedUI = results[0].gameObject;
+
+                    foreach (RaycastResult result in results)
                     {
-                        _selectedUI = null;
+                        if (result.gameObject.name.Contains("Color"))
+                            _selectedUI = result.gameObject;
+
+                        if (result.gameObject.tag == "Icon")
+                            _selectedUI = result.gameObject.transform.parent.gameObject;
+                    }
+
+                    if (_selectedUI.tag == "Tile")
+                    {
+                        _dragTiles.Clear();
+                        _dragFinger = finger;
+                    }
+                    if (_selectedUI.transform.parent == _curPlayer.transform)
+                    {
+                        if ((_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4()) && !_boosterUsed)
+                        {
+                            _selectedUI.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
+                            _boosterUsed = true;
+                        }
+                        else
+                        {
+                            _selectedUI = null;
+                        }
                     }
                 }
             }
-        }
-        if (RootController.Instance.ControlsEnabled() && finger.Index == 1)
-        {
-            _selectedUI2 = null;
-
-            GraphicRaycaster gRaycast = _canvas.GetComponent<GraphicRaycaster>();
-            PointerEventData ped = new PointerEventData(null);
-            ped.position = finger.GetSnapshotScreenPosition(1f);
-            List<RaycastResult> results = new List<RaycastResult>();
-            gRaycast.Raycast(ped, results);
-
-            if (results != null)
+            if (finger.Index == 1)
             {
-                _selectedUI2 = results[0].gameObject;
-                foreach (RaycastResult result in results)
-                {
-                    if ((result.gameObject.name == "Color1" || result.gameObject.name == "Color2") && result.gameObject != _selectedUI)
-                        _selectedUI2 = result.gameObject;
-                }
+                _selectedUI2 = null;
 
-                if (_selectedUI2.transform.parent == _curPlayer.transform)
+                GraphicRaycaster gRaycast = _canvas.GetComponent<GraphicRaycaster>();
+                PointerEventData ped = new PointerEventData(null);
+                ped.position = finger.GetSnapshotScreenPosition(1f);
+                List<RaycastResult> results = new List<RaycastResult>();
+                gRaycast.Raycast(ped, results);
+
+                if (results != null)
                 {
-                    if (_selectedUI2.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI2.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4())
+                    _selectedUI2 = results[0].gameObject;
+                    foreach (RaycastResult result in results)
                     {
-                        _selectedUI2.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
-                        EndTurn();
+                        if ((result.gameObject.name == "Color1" || result.gameObject.name == "Color2") && result.gameObject != _selectedUI)
+                            _selectedUI2 = result.gameObject;
+                    }
+
+                    if (_selectedUI2.transform.parent == _curPlayer.transform)
+                    {
+                        if (_selectedUI2.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI2.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4())
+                        {
+                            _selectedUI2.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
+                            EndTurn();
+                        }
                     }
                 }
             }

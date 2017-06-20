@@ -20,6 +20,8 @@ public class PortraitUI : MonoBehaviour {
         _timerSprites = Resources.LoadAll<Sprite>("Images/AvatarTimer128x128");
         _image = GetComponent<Image>();
         _timer = transform.Find("Timer").gameObject;
+
+
     }
 
     public void SetHitpoints (float hitpoints, float maxHealth)

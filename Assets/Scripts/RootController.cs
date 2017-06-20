@@ -16,6 +16,8 @@ public class RootController : NetworkBehaviour
     public StateBase.ESubState _curState;
 
     private List<Player> players;
+
+    [SyncVar]
     private Player currentPlayer;
     private Player _winnerPlayer;
     //private Settings _settings;
@@ -167,16 +169,25 @@ public class RootController : NetworkBehaviour
 
     public PlayerEntity GetMyPlayerEntity ()
     {
+        int lookForNumber = 0;
+        if (isServer)
+        {
+            lookForNumber = 0;
+        }
+        else
+            lookForNumber = 1;
+
         PlayerEntity entity = null;
         foreach (GameObject playerObj in GameObject.FindGameObjectsWithTag("Player"))
         {
             PlayerEntity player = playerObj.GetComponent<PlayerEntity>();
             if (player != null) { 
-                if (player.CheckIfLocal())
+                if (player.number == lookForNumber)
                     entity = player;
             }
         }
-            
+
+        //Debug.Log("Found entity: "+ entity + " w number " + lookForNumber);
         return entity;
     }
 
@@ -191,7 +202,7 @@ public class RootController : NetworkBehaviour
                 {
                     if (player.CheckIfLocal())
                         entity = player;
-            }
+                }
             }
         }
 
@@ -212,6 +223,11 @@ public class RootController : NetworkBehaviour
     public Player GetPlayer(int number)
     {
         return players[number];
+    }
+
+    public Player GetMyPlayer()
+    {
+        return GetPlayer(GetMyPlayerEntity().number);
     }
 
     public Player NextPlayer(int number) //if number is 1, count is 2.
@@ -243,6 +259,16 @@ public class RootController : NetworkBehaviour
     public Player GetWinnerPlayer()
     {
         return _winnerPlayer;
+    }
+
+    public bool IsMyTurn()
+    {
+        bool isTurn = false;
+
+        if (GetCurrentPlayer().playerNumber == GetMyPlayerEntity().number)
+            isTurn = true;
+
+        return isTurn;
     }
 
     public void TriggerEndScreen(Player lostPlayer)
