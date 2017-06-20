@@ -7,6 +7,7 @@ public class Player : ScriptableObject
 {
     public int playerNumber;
     public string playerString;
+    public PlayerEntity playerEntity;
 
     private float _health;
     public float health { get { return _health; } set { _health = value;} }
@@ -50,10 +51,11 @@ public class Player : ScriptableObject
     public bool shielded = false;
     private GameObject shieldEffect = null;
 
-    public void Init(string name, int number)
+    public void Init(string name, int number, PlayerEntity entity)
     {
         playerString = name;
         playerNumber = number;
+        playerEntity = entity;
 
         portrait = null;
         health = settings.PlayerHealth;

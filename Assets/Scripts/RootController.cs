@@ -44,6 +44,8 @@ public class RootController : NetworkBehaviour
         _audio = GameObject.Find("Audio").GetComponent<AudioSource>();
         players = new List<Player>();
         _winnerPlayer = null;
+
+        RootController.Instance.StartNormalGame();
     }
 
     public bool MultiplayerActive()
@@ -151,19 +153,19 @@ public class RootController : NetworkBehaviour
         Player player1 = ScriptableObject.CreateInstance<Player>();
         player1.settings = ScriptableObject.CreateInstance<Settings>();
         player1.settings.DefaultSettings();
-        player1.Init("Player1", 0);
+        player1.Init("Player1", 0, GetPlayerEntity(0));
         players.Add(player1);
 
         Player player2 = ScriptableObject.CreateInstance<Player>();
         player2.settings = ScriptableObject.CreateInstance<Settings>();
         player2.settings.DefaultSettings();
-        player2.Init("Player2", 1);
+        player2.Init("Player2", 1, GetPlayerEntity(1));
         players.Add(player2);
 
         currentPlayer = player1;
     }
 
-    public PlayerEntity GetPlayerEntity ()
+    public PlayerEntity GetMyPlayerEntity ()
     {
         PlayerEntity entity = null;
         foreach (GameObject playerObj in GameObject.FindGameObjectsWithTag("Player"))
@@ -175,6 +177,24 @@ public class RootController : NetworkBehaviour
             }
         }
             
+        return entity;
+    }
+
+    public PlayerEntity GetPlayerEntity(int number)
+    {
+        PlayerEntity entity = null;
+        foreach (GameObject playerObj in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            if (playerObj.name.Contains("PlayerEntity " + number)) { 
+                PlayerEntity player = playerObj.GetComponent<PlayerEntity>();
+                if (player != null)
+                {
+                    if (player.CheckIfLocal())
+                        entity = player;
+            }
+            }
+        }
+
         return entity;
     }
 

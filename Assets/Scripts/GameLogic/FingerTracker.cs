@@ -5,35 +5,25 @@ using UnityEngine.UI;
 
 public class FingerTracker : NetworkBehaviour
 {
-    Lean.Touch.LeanFinger trackFinger;
-    PlayerEntity playerEntity;
-    Image image;
-
-    [SyncVar]
-    bool fingerDown = false;
+    private Lean.Touch.LeanFinger trackFinger;
+    private bool fingerDown = false;
 
     // Use this for initialization
-    void Start()
+    private void Start()
     {
         if (!isLocalPlayer)
         {
             Destroy(this);
             return;
         }
-
-        playerEntity = gameObject.GetComponent<PlayerEntity>();
-        image = GetComponent<Image>();
     }
 
     private void Update()
     {
         if (fingerDown)
         {
-            image.enabled = true;
             transform.position = trackFinger.GetLastWorldPosition(1f, Camera.current);
         }
-        else
-            image.enabled = false; 
     }
 
     private void OnEnable()
@@ -42,7 +32,7 @@ public class FingerTracker : NetworkBehaviour
         Lean.Touch.LeanTouch.OnFingerUp += OnFingerUp;
     }
 
-    void OnFingerDown(Lean.Touch.LeanFinger finger)
+    private void OnFingerDown(Lean.Touch.LeanFinger finger)
     {
         if (finger.Index == 0 && hasAuthority)
         {
@@ -51,12 +41,12 @@ public class FingerTracker : NetworkBehaviour
         }
     }
 
-    void OnFingerUp(Lean.Touch.LeanFinger finger)
+    private void OnFingerUp(Lean.Touch.LeanFinger finger)
     {
         if (finger.Index == 0 && hasAuthority)
         {
             fingerDown = false;
-            finger = null;
+            trackFinger = null;
         }
     }
 }

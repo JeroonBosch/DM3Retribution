@@ -11,7 +11,6 @@ public class MenuUI : StateUI
 
     private void Start()
     {
-        RootController.Instance.StartNormalGame();
         _player1 = transform.Find("Canvas").Find("Player1");
         _player2 = transform.Find("Canvas").Find("Player2");
     }

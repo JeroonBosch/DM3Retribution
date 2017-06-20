@@ -72,9 +72,10 @@ public class PlayUI : StateUI
             _gridController.SyncAllTiles();
             //RootController.Instance.SpawnPlayerEntity();
             //RootController.Instance.GetPlayerEntity().SetParent(_canvas.transform);
-            foreach (PlayerEntity player in RootController.Instance.GetPlayerEntities())
-                player.SetParent(_canvas.transform);
-        }   
+        }
+
+        foreach (PlayerEntity player in RootController.Instance.GetPlayerEntities())
+            player.SetParentUI(_canvas.transform);
     }
 
     private void FixedUpdate()
@@ -299,7 +300,15 @@ public class PlayUI : StateUI
 
             if (results != null && results.Count > 0)
             {
+                //Remove non-matches.
+                foreach (RaycastResult result in results)
+                {
+                    if (result.gameObject.tag == "Player")
+                        results.Remove(result);
+                }
+
                 _selectedUI = results[0].gameObject;
+
                 foreach (RaycastResult result in results)
                 {
                     if (result.gameObject.name.Contains("Color"))
