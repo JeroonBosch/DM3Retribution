@@ -12,20 +12,16 @@ public class RootController : NetworkBehaviour
 
     
     private StateBase _stateController;
-    [SyncVar(hook = "OnCurrentStateChanged")]
     public StateBase.ESubState _curState;
 
-    private List<Player> players;
+    //private List<Player> players;
 
-    [SyncVar]
-    private Player currentPlayer;
-    private Player _winnerPlayer;
-    //private Settings _settings;
+    //[SyncVar]
+    private int currentPlayerNumber;
+    private PlayerEntity currentPE;
+    private PlayerEntity _winnerPlayer; 
 
-    public static RootController Instance
-    {
-        get { return _instance; }
-    }
+    public static RootController Instance { get; private set; }
 
     public void Quit()
     {
@@ -36,39 +32,30 @@ public class RootController : NetworkBehaviour
     {
         SceneManager.LoadScene(0);
     }
-
-    void Awake()
+    private void Awake()
     {
-        _instance = this;
+        // First we check if there are any other instances conflicting
+        if (Instance != null && Instance != this)
+        {
+            // If that is the case, we destroy other instances
+            Destroy(gameObject);
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         _stateController = new StateBase();
         _stateController.Start() ;
         _curState = _stateController.State;
-        _audio = GameObject.Find("Audio").GetComponent<AudioSource>();
-        players = new List<Player>();
+        _audio = GetComponent<AudioSource>();
+        //players = new List<Player>();
         _winnerPlayer = null;
 
-        RootController.Instance.StartNormalGame();
+        StartNormalGame();
     }
 
     public bool MultiplayerActive()
     {
         return NetworkServer.active;
-    }
-
-    public bool MultiplayerIsServer ()
-    {
-        if (NetworkServer.active)
-            return isServer;
-        else
-            return false;
-    }
-
-    public bool MultiplayerIsClient()
-    {
-        if (NetworkServer.active)
-            return isLocalPlayer;
-        else
-            return false;
     }
 
     public void SpawnOnServer(GameObject obj)
@@ -107,10 +94,17 @@ public class RootController : NetworkBehaviour
     {
         if (_curState != newState)
             _curState = newState;
+
+        if (isServer)
+            RpcSyncState(newState);
     }
 
-    private void OnCurrentStateChanged(StateBase.ESubState newState)
+    [ClientRpc]
+    private void RpcSyncState (StateBase.ESubState newState)
     {
+        if (_curState != newState)
+            _curState = newState;
+
         if (_stateController.State != newState)
             _stateController.State = newState;
     }
@@ -130,7 +124,7 @@ public class RootController : NetworkBehaviour
         if (!_controlsEnabled)
         {
             _controlsEnabled = true;
-            GetCurrentPlayer().playerEntity.EndBlueTileEffect();
+            GetCurrentPlayerEntity().EndBlueTileEffect();
         }    
     }
 
@@ -152,15 +146,18 @@ public class RootController : NetworkBehaviour
     public void StartNormalGame ()
     {
         Debug.Log("Game start.");
-        Player player1 = ScriptableObject.CreateInstance<Player>();
+        /*Player player1 = ScriptableObject.CreateInstance<Player>();
         player1.Init("Player1", 0, GetPlayerEntity(0));
         players.Add(player1);
 
         Player player2 = ScriptableObject.CreateInstance<Player>();
         player2.Init("Player2", 1, GetPlayerEntity(1));
-        players.Add(player2);
+        players.Add(player2);*/
 
-        currentPlayer = player1;
+        //currentPlayer = player1;
+        currentPlayerNumber = 0;
+        if (GetPlayerEntity(0))
+            currentPE = GetPlayerEntity(0); 
     }
 
     public PlayerEntity GetMyPlayerEntity ()
@@ -201,6 +198,27 @@ public class RootController : NetworkBehaviour
         return entity;
     }
 
+    public PlayerEntity GetCurrentPlayerEntity()
+    {
+        return currentPE;
+    }
+
+    public PlayerEntity GetNextPlayerEntity()
+    {
+        return NextPE(currentPE.number);
+    }
+
+    public PlayerEntity NextPE(int number) //if number is 1, count is 2.
+    {
+        PlayerEntity nextPlayer = null;
+
+        if (number < (GetPlayerEntities().Count - 1)) // number is 1, so it's smaller or equal than 2-1
+            nextPlayer = GetPlayerEntities()[number + 1];
+        else
+            nextPlayer = GetPlayerEntities()[0];
+        return nextPlayer;
+    }
+
     public List<PlayerEntity> GetPlayerEntities()
     {
         List<PlayerEntity> list = new List<PlayerEntity>();
@@ -212,7 +230,17 @@ public class RootController : NetworkBehaviour
         return list;
     }
 
-    public Player GetPlayer(int number)
+    public PlayerEntity GetCurrentPlayer()
+    {
+        return currentPE;
+    }
+
+    public void SetCurrentPlayer(PlayerEntity player)
+    {
+        currentPE = player;
+    }
+
+    /*public Player GetPlayer(int number)
     {
         return players[number];
     }
@@ -233,22 +261,12 @@ public class RootController : NetworkBehaviour
         return nextPlayer;
     }
 
-    public Player GetCurrentPlayer()
-    {
-        return currentPlayer;
-    }
-
-    public void SetCurrentPlayer(Player player)
-    {
-        currentPlayer = player;
-    }
-
     public Player GetNextPlayer()
     {
         return NextPlayer(currentPlayer.playerNumber);
-    }
+    }*/
 
-    public Player GetWinnerPlayer()
+    public PlayerEntity GetWinnerPlayer()
     {
         return _winnerPlayer;
     }
@@ -257,18 +275,18 @@ public class RootController : NetworkBehaviour
     {
         bool isTurn = false;
 
-        if (GetCurrentPlayer().playerNumber == GetMyPlayerEntity().number)
+        if (GetCurrentPlayerEntity() == GetMyPlayerEntity())
             isTurn = true;
 
         return isTurn;
     }
 
-    public void TriggerEndScreen(Player lostPlayer)
+    public void TriggerEndScreen(PlayerEntity lostPlayer)
     {
-        _winnerPlayer = NextPlayer(lostPlayer.playerNumber);
-        foreach (Player player in players)
-            player.playerEntity.SetPortraitSprite();
+        _winnerPlayer = NextPE(lostPlayer.number);
+        foreach (PlayerEntity player in GetPlayerEntities())
+            player.SetPortraitSprite();
 
-        _stateController.State = StateBase.ESubState.LevelWon;
+        _stateController.State = StateBase.ESubState.LevelEnd;
     }
 }

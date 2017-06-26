@@ -117,7 +117,7 @@ public class TileGridController : MonoBehaviour {
         destructionQueue.Clear();
     }
 
-    public void DestroyTile(GameObject tile, Player destroyedBy, int count, int totalCount)
+    public void DestroyTile(GameObject tile, PlayerEntity destroyedBy, int count, int totalCount)
     {
         //isDestroying = true;
 

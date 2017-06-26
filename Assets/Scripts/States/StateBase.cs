@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class StateBase  {
 	
-	public enum ESubState { Playing, Pause, Menu, LevelWon, LevelLost }; 
+	public enum ESubState { Lobby, Playing, Pause, Menu, LevelEnd }; 
 	
 	protected ESubState m_CurrentState;
 
@@ -21,6 +21,10 @@ public class StateBase  {
 
     private void Menu()
     {
+        menuState = GameObject.Find("MenuState");
+        playState = GameObject.Find("PlayState");
+        endState = GameObject.Find("EndState");
+
         Time.timeScale = 1.0f;
         menuState.SetActive(true);
         //playState.SetActive(false);
@@ -58,11 +62,7 @@ public class StateBase  {
 	
 	public virtual void Start()
 	{
-        menuState = GameObject.Find("MenuState");
-        playState = GameObject.Find("PlayState");
-        endState = GameObject.Find("EndState");
-
-        State = ESubState.Menu;
+        State = ESubState.Lobby;
     }
 
 
@@ -106,11 +106,7 @@ public class StateBase  {
 			    {
                     Menu();
 			    }
-			    else if ( value == ESubState.LevelWon )
-			    {
-                    EndScreen();
-                }
-			    else if ( value == ESubState.LevelLost )
+			    else if ( value == ESubState.LevelEnd )
 			    {
                     EndScreen();
                 }

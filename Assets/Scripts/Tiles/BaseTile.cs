@@ -23,7 +23,7 @@ public class BaseTile : MonoBehaviour {
     protected float _explosionTime = 0f;
     protected List<BaseTile> _removeFromList;
     protected List<BaseTile> _destructionQueue;
-    protected Player _destroyedBy;
+    protected PlayerEntity _destroyedBy;
     protected bool _hasExploded = false;
     protected int _currentCombo = 0;
 
@@ -73,7 +73,7 @@ public class BaseTile : MonoBehaviour {
 
     }
 
-    public void PromptDestroy (List<BaseTile> destructionQueue, List<BaseTile> removeFromList, Player destroyedBy, int count, int totalCount)
+    public void PromptDestroy (List<BaseTile> destructionQueue, List<BaseTile> removeFromList, PlayerEntity destroyedBy, int count, int totalCount)
     {
         if (removeFromList != null)
         {
@@ -96,7 +96,7 @@ public class BaseTile : MonoBehaviour {
         _destructionQueue.Remove(this);
     }
 
-    protected void Explosion(Player player)
+    protected void Explosion(PlayerEntity player)
     {
         if (transform)
         {
@@ -108,8 +108,8 @@ public class BaseTile : MonoBehaviour {
             explosion.transform.SetParent(transform.parent.parent.parent);
             explosion.transform.position = transform.position;
 
-            Transform powerObject = _destroyedBy.playerEntity.GetPowerObjectByType(_type.Type);
-            Player targetPlayer = RootController.Instance.NextPlayer(player.playerNumber);
+            Transform powerObject = _destroyedBy.GetPowerObjectByType(_type.Type);
+            PlayerEntity targetPlayer = RootController.Instance.NextPE(player.number);
             float damageMultiplier = Mathf.Sqrt(_currentCombo);
             explosion.GetComponent<TileExplosionUI>().Init(powerObject, targetPlayer, damageMultiplier);
         }

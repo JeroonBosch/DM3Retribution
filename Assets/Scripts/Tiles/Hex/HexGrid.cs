@@ -67,10 +67,10 @@ public class HexGrid : NetworkBehaviour
     private void LateUpdate()
     {
         //Server-side only.
-        /*if (!isServer)
+        if (!isServer)
         {
             return;
-        }*/
+        }
         if (rows != null)
         {
             foreach (HexRow row in rows)
@@ -99,11 +99,13 @@ public class HexGrid : NetworkBehaviour
 
     public void SyncAllTiles()
     {
-        foreach (HexRow row in rows)
-        {
-            foreach (HexTile tile in row.tiles)
+        if (isServer) { 
+            foreach (HexRow row in rows)
             {
-                RpcUpdateTileType(tile.xy, tile.type.Type);
+                foreach (HexTile tile in row.tiles)
+                {
+                    RpcUpdateTileType(tile.xy, tile.type.Type);
+                }
             }
         }
     }
@@ -187,7 +189,7 @@ public class HexGrid : NetworkBehaviour
         destructionQueue.Clear();
     }
 
-    public void DestroyTile(GameObject tile, Player destroyedBy, int count, int totalCount)
+    public void DestroyTile(GameObject tile, PlayerEntity destroyedBy, int count, int totalCount)
     {
         //isDestroying = true;
 
@@ -229,7 +231,7 @@ public class HexGrid : NetworkBehaviour
 
     public void CreateBoosterAt(HexTile tile, int totalCount, TileTypes.ESubState requestedType)
     {
-        Debug.Log(tile.xy + "Booster requested");
+        Debug.Log(tile.xy + " Booster requested");
         _boosterRequest = tile.xy;
         _boosterType = requestedType;
 
@@ -264,8 +266,46 @@ public class HexGrid : NetworkBehaviour
                 row.tiles.Insert(0, tile);
             else
                 row.tiles.Add(tile);
+
+            Debug.Log("Server added tile to Row " + row.number);
+            RpcAddTile(tile.type.Type, row.number, direction);
         }
 
+        foreach (HexTile tile in row.tiles)
+        {
+            tile.transform.name = "Tile (" + row.number + ", " + row.tiles.IndexOf(tile) + ")"; //F.e. Tile (0,7)
+            tile.xy = new Vector2(row.number, row.tiles.IndexOf(tile));
+        }
+        RpcRecountTiles(row.number);
+    }
+
+    [ClientRpc]
+    private void RpcAddTile(TileTypes.ESubState type, int rowNo, string direction)
+    {
+        if (!isServer)
+        {
+            HexRow row = rows[rowNo];
+            GameObject newTile = Instantiate(Resources.Load("HexTile")) as GameObject;
+            newTile.transform.SetParent(row.transform, false);
+            if (direction == "top" || direction == "left")
+                newTile.transform.SetAsFirstSibling();
+            HexTile tile = newTile.GetComponent<HexTile>();
+            tile.InitWithType(type);
+
+            if (direction == "top" || direction == "left")
+                row.tiles.Insert(0, tile);
+            else
+                row.tiles.Add(tile);
+
+            Debug.Log("Client added tile to Row " + row.number);
+        }
+
+    }
+
+    [ClientRpc]
+    private void RpcRecountTiles (int rowNo)
+    {
+        HexRow row = rows[rowNo];
         foreach (HexTile tile in row.tiles)
         {
             tile.transform.name = "Tile (" + row.number + ", " + row.tiles.IndexOf(tile) + ")"; //F.e. Tile (0,7)

@@ -26,7 +26,7 @@ public class HexTile : MonoBehaviour {
     protected float _explosionTime = 0f;
     protected List<HexTile> _removeFromList;
     protected List<HexTile> _destructionQueue;
-    protected Player _destroyedBy;
+    protected PlayerEntity _destroyedBy;
     protected bool _hasExploded = false;
     protected int _currentCombo = 0;
 
@@ -47,6 +47,12 @@ public class HexTile : MonoBehaviour {
     public void InitRandom()
     {
         _type.Type = TileTypes.ESubState.yellow + Random.Range(0, Constants.AmountOfColors);
+        Init();
+    }
+
+    public void InitWithType(TileTypes.ESubState type)
+    {
+        _type.Type = type;
         Init();
     }
 
@@ -97,10 +103,13 @@ public class HexTile : MonoBehaviour {
 
         if (_image)
         {
-            if (_selected)
-                _image.sprite = _type.HexSpriteSelected;
-            else
-                _image.sprite = _type.HexSprite;
+            if (_type != null)
+            {
+                if (_selected)
+                    _image.sprite = _type.HexSpriteSelected;
+                else
+                    _image.sprite = _type.HexSprite;
+            }
         }
     }
 
@@ -125,7 +134,7 @@ public class HexTile : MonoBehaviour {
         return toDestroy;
     }
 
-    public void PromptDestroy(List<HexTile> destructionQueue, List<HexTile> removeFromList, Player destroyedBy, int count, int totalCount)
+    public void PromptDestroy(List<HexTile> destructionQueue, List<HexTile> removeFromList, PlayerEntity destroyedBy, int count, int totalCount)
     {
         if (removeFromList != null)
         {
@@ -148,7 +157,7 @@ public class HexTile : MonoBehaviour {
         _destructionQueue.Remove(this);
     }
 
-    protected void Explosion(Player player)
+    protected void Explosion(PlayerEntity player)
     {
         if (transform)
         {
@@ -161,7 +170,7 @@ public class HexTile : MonoBehaviour {
             explosion.transform.position = transform.position;
 
             //Transform powerObject = _destroyedBy.GetPowerObjectByType(_type.Type);
-            Player targetPlayer = RootController.Instance.NextPlayer(player.playerNumber);
+            PlayerEntity targetPlayer = RootController.Instance.NextPE(player.number);
             float damageMultiplier = Mathf.Sqrt(_currentCombo);
             explosion.GetComponent<TileExplosionUI>().Init(targetPlayer, damageMultiplier);
         }

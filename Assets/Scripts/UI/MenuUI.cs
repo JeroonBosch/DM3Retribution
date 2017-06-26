@@ -13,17 +13,20 @@ public class MenuUI : StateUI
     {
         _player1 = transform.Find("Canvas").Find("Player1");
         _player2 = transform.Find("Canvas").Find("Player2");
+
+        RootController.Instance.StateController().State = StateBase.ESubState.Menu;
     }
 
-    private void Update()
+    /*private void Update()
     {
-        UpdatePlayer(0);
-        UpdatePlayer(1);
-    }
+        //UpdatePlayer(0);
+        //UpdatePlayer(1);
+    }*/
 
     private void UpdatePlayer(int playerNumber)
     {
-        Player player = RootController.Instance.GetPlayer(playerNumber);
+        //Player player = RootController.Instance.GetPlayer(playerNumber);
+        Player player = null;
         if (player)
         {
             Transform colorSelect;
@@ -48,7 +51,7 @@ public class MenuUI : StateUI
                     selected1 = colorImage.Find("Selected1");
                 }
             }
-    
+
             for (int i = 0; i < colors.Count; i++)
             {
                 Transform colorImage = colors[i];
@@ -64,7 +67,7 @@ public class MenuUI : StateUI
 
     public void Handle_Engage()
     {
-        if (RootController.Instance.MultiplayerIsServer())
+        if (RootController.Instance.isServer)
             RootController.Instance.StateController().State = StateBase.ESubState.Playing;
     }
 

@@ -24,7 +24,9 @@ public class PlayUI : StateUI
 
     private float _lingerTimer;
     private GameObject _lingerTile;
-    private Player _curPlayer;
+
+    private PlayerEntity _curPlayer;
+    private Text _curPlayerText;
 
     private void Start()
     {
@@ -38,7 +40,8 @@ public class PlayUI : StateUI
         _dragTiles = new List<GameObject>();
         _destructionPrediction = new List<HexTile>();
 
-        _curPlayer = RootController.Instance.GetPlayer(0);
+        _curPlayer = RootController.Instance.GetPlayerEntity(0);
+        _curPlayerText = _canvas.Find("CurPlayer").GetComponent<Text>();
         //RootController.Instance.GetPlayer(0).SetTimerActive(true);
         //RootController.Instance.GetPlayer(1).SetTimerActive(false);
     }
@@ -46,7 +49,7 @@ public class PlayUI : StateUI
     private void Update()
     {
         if (active) { 
-            PlayerEntity pe = RootController.Instance.GetPlayerEntity(RootController.Instance.GetCurrentPlayer().playerNumber);
+            PlayerEntity pe = RootController.Instance.GetCurrentPlayerEntity();
             if (pe)
             {
                 if (RootController.Instance.ControlsEnabled() && RootController.Instance.StateController().State == StateBase.ESubState.Playing)
@@ -57,15 +60,19 @@ public class PlayUI : StateUI
                 if (pe.timer > Constants.MoveTimeInSeconds)
                 {
                     PassTurn();
+                    pe.timer = 0;
                 }
             }
+
+            _curPlayer = RootController.Instance.GetCurrentPlayerEntity();
+            _curPlayerText.text = "Cur player: " + RootController.Instance.GetCurrentPlayer().number + " " + RootController.Instance.ControlsEnabled() + " " + RootController.Instance.IsMyTurn();
         }
     }
 
     protected override void ActiveConsequences()
     {
         active = true;
-        if (RootController.Instance.MultiplayerIsServer()) { 
+        if (RootController.Instance.isServer) { 
             _gridController.SyncAllTiles();
         }
 
@@ -75,7 +82,11 @@ public class PlayUI : StateUI
             player.SetUI();
             player.GameStart();
         }
-            
+
+        _curPlayer = RootController.Instance.GetPlayerEntity(0);
+        _curPlayer.isActive = true;
+        RootController.Instance.SetCurrentPlayer(_curPlayer);
+
 
         if (RootController.Instance.GetMyPlayerEntity().number == 1)
         {
@@ -87,7 +98,13 @@ public class PlayUI : StateUI
 
     private void FixedUpdate()
     {
-        if (active) { 
+        if (active) {
+
+            if (GameObject.FindObjectsOfType<TileExplosionUI>().Length > 0)
+                RootController.Instance.DisableControls();
+            else
+                RootController.Instance.EnableControls();
+
             if (_dragFinger != null) {
                 //if (RootController.Instance.MultiplayerIsClient())
                     //TrackFinger();
@@ -320,9 +337,9 @@ public class PlayUI : StateUI
                         _dragTiles.Clear();
                         _dragFinger = finger;
                     }
-                    if (_selectedUI.transform.parent == _curPlayer.playerEntity.uiTransform)
+                    if (_selectedUI.transform.parent == _curPlayer.uiTransform)
                     {
-                        if ((_selectedUI.name == "Color1" && _curPlayer.playerEntity.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.playerEntity.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.playerEntity.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.playerEntity.CheckPowerLevel_4()) && RootController.Instance.GetMyPlayerEntity().boosterUsed)
+                        if ((_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4()) && !_curPlayer.boosterUsed)
                         {
                             _selectedUI.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
                             RootController.Instance.GetMyPlayerEntity().UseBooster();
@@ -353,9 +370,9 @@ public class PlayUI : StateUI
                             _selectedUI2 = result.gameObject;
                     }
 
-                    if (_selectedUI2.transform.parent == _curPlayer.playerEntity.uiTransform)
+                    if (_selectedUI2.transform.parent == _curPlayer.uiTransform)
                     {
-                        if (_selectedUI2.name == "Color1" && _curPlayer.playerEntity.CheckPowerLevel_1() || _selectedUI2.name == "Color2" && _curPlayer.playerEntity.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.playerEntity.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.playerEntity.CheckPowerLevel_4())
+                        if (_selectedUI2.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI2.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4())
                         {
                             _selectedUI2.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
                             EndTurn();
@@ -436,15 +453,15 @@ public class PlayUI : StateUI
             }
         }
 
-        _curPlayer.playerEntity.FillPower(_dragTiles[0].GetComponent<HexTile>().type.Type, _dragTiles.Count);
-        RootController.Instance.NextPlayer(_curPlayer.playerNumber).playerEntity.exploding = false;
+        _curPlayer.FillPower(_dragTiles[0].GetComponent<HexTile>().type.Type, _dragTiles.Count);
+        RootController.Instance.NextPE(_curPlayer.number).exploding = false;
 
         EndTurn();
     }
 
     void PassTurn ()
     {
-        _curPlayer.playerEntity.Heal(5);
+        _curPlayer.Heal(5);
 
         _dragFinger = null;
         if (_dragTiles != null)
@@ -453,15 +470,14 @@ public class PlayUI : StateUI
             _line.positionCount = 0;
         }
 
-
         EndTurn();
     }
 
     private void EndTurn ()
     {
-        if (_curPlayer.playerEntity.extraTurn)
+        if (_curPlayer.extraTurn)
         {
-            _curPlayer.playerEntity.EndExtraTurnEffect();
+            _curPlayer.EndExtraTurnEffect();
         } else { 
             RootController.Instance.GetMyPlayerEntity().EndTurn();
         }

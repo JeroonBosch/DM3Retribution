@@ -3,22 +3,22 @@ using System.Collections;
 
 public class MissileUI : MonoBehaviour
 {
-    private Player _target;
-    public Player target { set { _target = value;  } }
+    private PlayerEntity _target;
+    public PlayerEntity target { set { _target = value;  } }
 
     private TileTypes _type;
     public TileTypes.ESubState Type { set { _type.Type = value; } get { return _type.Type;  } }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name == _target.playerString)
+        if (collision.gameObject.name == _target.uiTransform.name)
         {
             if (_type.Type == TileTypes.ESubState.yellow) { 
-                _target.playerEntity.ReceiveDamage((int)RootController.Instance.NextPlayer(_target.playerNumber).playerEntity.YellowValue);
-                _target.playerEntity.SpecialExplosion("YellowTileExplosion");
+                _target.ReceiveDamage((int)RootController.Instance.NextPE(_target.number).YellowValue);
+                _target.SpecialExplosion("YellowTileExplosion");
             } else if (_type.Type == TileTypes.ESubState.red) { 
-                _target.playerEntity.ReceiveDamage((int)RootController.Instance.NextPlayer(_target.playerNumber).playerEntity.RedValue);
-                _target.playerEntity.SpecialExplosion("RedTileExplosion"); 
+                _target.ReceiveDamage((int)RootController.Instance.NextPE(_target.number).RedValue);
+                _target.SpecialExplosion("RedTileExplosion"); 
             }
 
             Destroy(gameObject);

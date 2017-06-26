@@ -6,7 +6,7 @@ public class TileExplosionUI : MonoBehaviour
     private RectTransform _rt;
     private Vector2 _startPosition;
     private Transform _target;
-    private Player _targetPlayer;
+    private PlayerEntity _targetPlayer;
 
     private float _travelTime = .66f;
     private float _travellingFor = 0f;
@@ -15,34 +15,32 @@ public class TileExplosionUI : MonoBehaviour
     private bool _damageApplied = false;
     private float _damageMultiplier = 1;
 
-    public void Init(Transform target, Player targetPlayer, float damageMultiplier)
+    public void Init(Transform target, PlayerEntity targetPlayer, float damageMultiplier)
     {
         _damageMultiplier = damageMultiplier;
 
         _target = target; //overridden, but kept as backup if we ever have particles to fly to the combo-meter
-        _target = targetPlayer.playerEntity.uiTransform;
+        _target = targetPlayer.uiTransform;
         _targetPlayer = targetPlayer;
         _rt = GetComponent<RectTransform>();
         _startPosition = _rt.position;
         _random = Random.Range(-1f, 1f);
 
-        RootController.Instance.DisableControls();
 
         //_travelTime = .4f + count * .5f;
         Destroy(this.gameObject, _travelTime);
     }
 
-    public void Init(Player targetPlayer, float damageMultiplier)
+    public void Init(PlayerEntity targetPlayer, float damageMultiplier)
     {
         _damageMultiplier = damageMultiplier;
 
-        _target = targetPlayer.playerEntity.uiTransform;
+        _target = targetPlayer.uiTransform;
         _targetPlayer = targetPlayer;
         _rt = GetComponent<RectTransform>();
         _startPosition = _rt.position;
         _random = Random.Range(-1f, 1f);
 
-        RootController.Instance.DisableControls();
 
         //_travelTime = .4f + count * .5f;
         Destroy(this.gameObject, _travelTime);
@@ -95,7 +93,7 @@ public class TileExplosionUI : MonoBehaviour
     private void ApplyDamage()
     {
         _damageApplied = true;
-        _targetPlayer.playerEntity.NormalExplosion();
-        _targetPlayer.playerEntity.ReceiveDamage(1 * _damageMultiplier);
+        _targetPlayer.NormalExplosion();
+        _targetPlayer.ReceiveDamage(1 * _damageMultiplier);
     }
 }

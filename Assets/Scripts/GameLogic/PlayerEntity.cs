@@ -6,6 +6,10 @@ using UnityEngine.UI;
 
 public class PlayerEntity : NetworkBehaviour
 {
+    private bool _isActive;
+    public bool isActive { get { return _isActive; } set { _isActive = value; } }
+
+    #region values
     //Requirements
     private float _yellowFillRequirement;
     public float YellowFillRequirement { get { return _yellowFillRequirement; } set { _yellowFillRequirement = value; } }
@@ -36,7 +40,7 @@ public class PlayerEntity : NetworkBehaviour
 
     private float _playerHealth; //max health
     public float PlayerHealth { get { return _playerHealth; } set { _playerHealth = value; } }
-
+    #endregion
 
 
     private bool fingerDown = false;
@@ -107,8 +111,8 @@ public class PlayerEntity : NetworkBehaviour
 
         gameObject.name = "PlayerEntity " + number;
 
-        if (RootController.Instance.GetPlayer(number).playerEntity != this)
-            RootController.Instance.GetPlayer(number).playerEntity = this;
+        //if (RootController.Instance.GetPlayer(number).playerEntity != this)
+        //    RootController.Instance.GetPlayer(number).playerEntity = this;
 
         Debug.Log("Initializing start for PE " + number);
 
@@ -117,6 +121,9 @@ public class PlayerEntity : NetworkBehaviour
 
     private void Update()
     {
+        if (_type1 == null)
+            DefaultSettings();
+
         if (visibility && !isLocalPlayer) // && RootController.Instance.GetCurrentPlayer().playerNumber != number
             image.enabled = true;
         else
@@ -180,24 +187,23 @@ public class PlayerEntity : NetworkBehaviour
         colors.Add(_uiTransform.Find("Color2"));
         colors.Add(_uiTransform.Find("Color3"));
         colors.Add(_uiTransform.Find("Color4"));
+        
+        SpecialPowerUI special1 = colors[0].GetComponent<SpecialPowerUI>();
+        special1.SetColorType(type1.Type, this);
 
-        Player player = RootController.Instance.GetPlayer(number);
-        SpecialPowerUI special1 = _uiTransform.Find("Color1").GetComponent<SpecialPowerUI>();
-        special1.SetColorType(type1.Type, player);
+        SpecialPowerUI special2 = colors[1].GetComponent<SpecialPowerUI>();
+        special2.SetColorType(type2.Type, this);
 
-        SpecialPowerUI special2 = _uiTransform.Find("Color2").GetComponent<SpecialPowerUI>();
-        special2.SetColorType(type2.Type, player);
+        SpecialPowerUI special3 = colors[2].GetComponent<SpecialPowerUI>();
+        special3.SetColorType(type3.Type, this);
 
-        SpecialPowerUI special3 = _uiTransform.Find("Color3").GetComponent<SpecialPowerUI>();
-        special3.SetColorType(type3.Type, player);
+        SpecialPowerUI special4 = colors[3].GetComponent<SpecialPowerUI>();
+        special4.SetColorType(type4.Type, this);
 
-        SpecialPowerUI special4 = _uiTransform.Find("Color4").GetComponent<SpecialPowerUI>();
-        special4.SetColorType(type4.Type, player);
-
-        _uiTransform.Find("Color1").GetComponent<SpecialPowerUI>().UpdateText(type1Power);
-        _uiTransform.Find("Color2").GetComponent<SpecialPowerUI>().UpdateText(type2Power);
-        _uiTransform.Find("Color3").GetComponent<SpecialPowerUI>().UpdateText(type3Power);
-        _uiTransform.Find("Color4").GetComponent<SpecialPowerUI>().UpdateText(type4Power);
+        special1.UpdateText(type1Power);
+        special2.UpdateText(type2Power);
+        special3.UpdateText(type3Power);
+        special4.UpdateText(type4Power);
     }
 
     public void SetPortraitSprite()
@@ -259,6 +265,13 @@ public class PlayerEntity : NetworkBehaviour
         Lean.Touch.LeanTouch.OnFingerUp += OnFingerUp;
     }
 
+
+    private void OnDisable()
+    {
+        Lean.Touch.LeanTouch.OnFingerDown -= OnFingerDown;
+        Lean.Touch.LeanTouch.OnFingerUp -= OnFingerUp;
+    }
+
     private void OnFingerDown(Lean.Touch.LeanFinger finger)
     {
         if (finger.Index == 0) { 
@@ -315,6 +328,9 @@ public class PlayerEntity : NetworkBehaviour
     [Command]
     private void CmdClearSelections ()
     {
+        if (!grid)
+            return;
+
         foreach (HexTile tile in grid.AllTilesAsHexTile())
             tile.selected = false;
 
@@ -354,66 +370,39 @@ public class PlayerEntity : NetworkBehaviour
         {
             count++;
             Vector2 position = go.GetComponent<HexTile>().xy;
-            CmdDestroyTile(position, RootController.Instance.GetCurrentPlayer(), count, list.Count);
+            CmdDestroyTile(position, RootController.Instance.GetCurrentPlayer().number, count, list.Count);
         }
     }
 
     public void CollateralDamage(Vector2 position, int totalCount)
     {
-        CmdDestroyTile(position, RootController.Instance.GetCurrentPlayer(), totalCount, totalCount);
+        CmdDestroyTile(position, RootController.Instance.GetCurrentPlayer().number, totalCount, totalCount);
     }
 
 
     [Command]
-    private void CmdDestroyTile(Vector2 position, Player player, int count, int totalCount)
+    private void CmdDestroyTile(Vector2 position, int playerNumber, int count, int totalCount)
     {
         HexTile tile = grid.FindHexTileAtPosition(position);
         if (tile.gameObject && !tile.isBeingDestroyed)
-            grid.DestroyTile(tile.gameObject, player, count, totalCount);
+            grid.DestroyTile(tile.gameObject, RootController.Instance.GetPlayerEntity(playerNumber), count, totalCount);
 
         if (isServer)
-            RpcDestroyTile(position, player, count, totalCount);
+            RpcDestroyTile(position, playerNumber, count, totalCount);
     }
 
     [ClientRpc]
-    private void RpcDestroyTile(Vector2 position, Player player, int count, int totalCount)
+    private void RpcDestroyTile(Vector2 position, int playerNumber, int count, int totalCount)
     {
         HexTile tile = grid.FindHexTileAtPosition(position);
         if (tile.gameObject && !tile.isBeingDestroyed) 
-            grid.DestroyTile(tile.gameObject, player, count, totalCount);
+            grid.DestroyTile(tile.gameObject, RootController.Instance.GetPlayerEntity(playerNumber), count, totalCount);
     }
 
-    public void EndTurn ()
-    {
-        CmdEndTurn();
-    }
 
-    [Command]
-    private void CmdEndTurn ()
-    {
-        RpcEndTurn();
-    }
 
-    [ClientRpc]
-    private void RpcEndTurn ()
-    {
-        Debug.Log("Ended turn.");
-        int curPlayerNo = RootController.Instance.GetCurrentPlayer().playerNumber;
-        PlayerEntity curPE = RootController.Instance.GetPlayerEntity(curPlayerNo);
-        Player curPlayer = RootController.Instance.GetCurrentPlayer();
-        Player nextPlayer = RootController.Instance.NextPlayer(curPlayer.playerNumber);
-        PlayerEntity nextPE = RootController.Instance.GetPlayerEntity(nextPlayer.playerNumber);
 
-        _timer = 0;
-        curPE.SetTimerActive(false);
-        curPlayer.playerEntity.turn++;
 
-        curPlayer = nextPlayer;
-        nextPE.SetTimerActive(true);
-        RootController.Instance.SetCurrentPlayer(nextPlayer);
-
-        _boosterUsed = false;
-    }
 
     public void UseBooster ()
     {
@@ -694,5 +683,43 @@ public class PlayerEntity : NetworkBehaviour
 
         uiTransform.localPosition = otherContainerPosition;
         otherContainer.localPosition = containerPosition;
+    }
+
+
+    public void EndTurn()
+    {
+        if (isClient)
+            CmdEndTurn();
+    }
+
+    [Command]
+    private void CmdEndTurn()
+    {
+        RpcEndTurn();
+    }
+
+    [ClientRpc]
+    private void RpcEndTurn()
+    {
+        Debug.Log("Ended turn.");
+        int curPlayerNo = RootController.Instance.GetCurrentPlayer().number;
+        PlayerEntity curPE = RootController.Instance.GetPlayerEntity(curPlayerNo);
+        curPE.timer = 0;
+        curPE.SetTimerActive(false);
+        PlayerEntity nextPE = RootController.Instance.NextPE(curPE.number);
+        nextPE.timer = 0;
+
+        curPE.isActive = false;
+        curPE.turn++;
+        
+        nextPE.SetTimerActive(true);
+        nextPE.isActive = true;
+        RootController.Instance.SetCurrentPlayer(nextPE);
+
+        RootController.Instance.EnableControls();
+
+        _boosterUsed = false;
+
+        grid.SyncAllTiles();
     }
 }

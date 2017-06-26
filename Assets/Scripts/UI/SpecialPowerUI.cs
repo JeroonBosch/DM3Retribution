@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class SpecialPowerUI : MonoBehaviour {
-    private Player _player;
+    private PlayerEntity _player;
     private GameObject _activeObject;
     private bool _active = false;
     private Lean.Touch.LeanFinger _finger;
@@ -58,7 +58,7 @@ public class SpecialPowerUI : MonoBehaviour {
     public void UpdateText (float power)
     {
         if (_player)
-            _text.text = power + "/" + _player.playerEntity.GetFillRequirementByType(_type.Type);
+            _text.text = power + "/" + _player.GetFillRequirementByType(_type.Type);
     }
 
     public void SetReady ()
@@ -74,7 +74,7 @@ public class SpecialPowerUI : MonoBehaviour {
         transform.localRotation = new Quaternion(0f, 0f, 0f, transform.localRotation.w);
     }
 
-    public void SetColorType (TileTypes.ESubState state, Player myPlayer)
+    public void SetColorType (TileTypes.ESubState state, PlayerEntity myPlayer)
     {
         _type.Type = state;
         GetComponent<Image>().sprite = _type.HexSprite;
@@ -84,7 +84,7 @@ public class SpecialPowerUI : MonoBehaviour {
     public void Fly ()
     {
         _active = false;
-        _player.playerEntity.EmptyPower(_type.Type);
+        _player.EmptyPower(_type.Type);
 
         if (_activeObject) { 
             Rigidbody2D rb = _activeObject.GetComponent<Rigidbody2D>();
@@ -93,7 +93,7 @@ public class SpecialPowerUI : MonoBehaviour {
         }
     }
 
-    public void SetActive (Lean.Touch.LeanFinger finger, Player curPlayer)
+    public void SetActive (Lean.Touch.LeanFinger finger, PlayerEntity curPlayer)
     {
         if (_activeObject != null)
             Destroy(_activeObject);
@@ -106,15 +106,15 @@ public class SpecialPowerUI : MonoBehaviour {
         else if (_type.Type == TileTypes.ESubState.yellow)
             _activeObject = Instantiate(Resources.Load<GameObject>("YellowSpecial"));
         else if (_type.Type == TileTypes.ESubState.blue)
-            curPlayer.playerEntity.BlueTileEffect(); //Shield
+            curPlayer.BlueTileEffect(); //Shield
         else if (_type.Type == TileTypes.ESubState.green)
-            curPlayer.playerEntity.GreenTileEffect();
+            curPlayer.GreenTileEffect();
 
         if (_activeObject != null)
         {
             _activeObject.name = "SpecialSelect";
             _activeObject.transform.SetParent(this.transform.parent.parent, false);
-            _activeObject.GetComponent<MissileUI>().target = RootController.Instance.NextPlayer(curPlayer.playerNumber);
+            _activeObject.GetComponent<MissileUI>().target = RootController.Instance.NextPE(curPlayer.number);
             _activeObject.GetComponent<MissileUI>().Type = _type.Type;
 
             _curPos = _finger.GetWorldPosition(1f, Camera.current);
