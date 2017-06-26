@@ -57,7 +57,8 @@ public class SpecialPowerUI : MonoBehaviour {
 
     public void UpdateText (float power)
     {
-        _text.text = power + "/" + _player.settings.GetFillRequirementByType(_type.Type);
+        if (_player)
+            _text.text = power + "/" + _player.playerEntity.GetFillRequirementByType(_type.Type);
     }
 
     public void SetReady ()
@@ -78,17 +79,12 @@ public class SpecialPowerUI : MonoBehaviour {
         _type.Type = state;
         GetComponent<Image>().sprite = _type.HexSprite;
         _player = myPlayer;
-
-        /*if (myPlayer.selectedType.Type == state)
-        {
-            GetComponent<Image>().sprite = _type.SpecialitySprite;
-        }*/
     }
 
     public void Fly ()
     {
         _active = false;
-        _player.EmptyPower(_type.Type);
+        _player.playerEntity.EmptyPower(_type.Type);
 
         if (_activeObject) { 
             Rigidbody2D rb = _activeObject.GetComponent<Rigidbody2D>();
@@ -110,9 +106,9 @@ public class SpecialPowerUI : MonoBehaviour {
         else if (_type.Type == TileTypes.ESubState.yellow)
             _activeObject = Instantiate(Resources.Load<GameObject>("YellowSpecial"));
         else if (_type.Type == TileTypes.ESubState.blue)
-            curPlayer.BlueTileEffect(); //Shield
+            curPlayer.playerEntity.BlueTileEffect(); //Shield
         else if (_type.Type == TileTypes.ESubState.green)
-            curPlayer.GreenTileEffect();
+            curPlayer.playerEntity.GreenTileEffect();
 
         if (_activeObject != null)
         {

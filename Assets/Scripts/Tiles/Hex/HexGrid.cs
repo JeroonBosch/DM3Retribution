@@ -26,7 +26,7 @@ public class HexGrid : NetworkBehaviour
 
     public void RotateBoard()
     {
-        GetComponent<RectTransform>().Rotate(new Vector3(0, 0, 180));
+        //GetComponent<RectTransform>().Rotate(new Vector3(0, 0, 180)); //Disabled for now.
     }
 
     private void CreateGrid()
@@ -67,10 +67,10 @@ public class HexGrid : NetworkBehaviour
     private void LateUpdate()
     {
         //Server-side only.
-        if (!isServer)
+        /*if (!isServer)
         {
             return;
-        }
+        }*/
         if (rows != null)
         {
             foreach (HexRow row in rows)

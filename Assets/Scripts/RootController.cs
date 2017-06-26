@@ -130,7 +130,7 @@ public class RootController : NetworkBehaviour
         if (!_controlsEnabled)
         {
             _controlsEnabled = true;
-            GetCurrentPlayer().EndBlueTileEffect();
+            GetCurrentPlayer().playerEntity.EndBlueTileEffect();
         }    
     }
 
@@ -153,14 +153,10 @@ public class RootController : NetworkBehaviour
     {
         Debug.Log("Game start.");
         Player player1 = ScriptableObject.CreateInstance<Player>();
-        player1.settings = ScriptableObject.CreateInstance<Settings>();
-        player1.settings.DefaultSettings();
         player1.Init("Player1", 0, GetPlayerEntity(0));
         players.Add(player1);
 
         Player player2 = ScriptableObject.CreateInstance<Player>();
-        player2.settings = ScriptableObject.CreateInstance<Settings>();
-        player2.settings.DefaultSettings();
         player2.Init("Player2", 1, GetPlayerEntity(1));
         players.Add(player2);
 
@@ -198,11 +194,7 @@ public class RootController : NetworkBehaviour
         {
             if (playerObj.name.Contains("PlayerEntity " + number)) { 
                 PlayerEntity player = playerObj.GetComponent<PlayerEntity>();
-                if (player != null)
-                {
-                    if (player.CheckIfLocal())
-                        entity = player;
-                }
+                entity = player;
             }
         }
 
@@ -275,7 +267,7 @@ public class RootController : NetworkBehaviour
     {
         _winnerPlayer = NextPlayer(lostPlayer.playerNumber);
         foreach (Player player in players)
-            player.SetPortraitSprite();
+            player.playerEntity.SetPortraitSprite();
 
         _stateController.State = StateBase.ESubState.LevelWon;
     }

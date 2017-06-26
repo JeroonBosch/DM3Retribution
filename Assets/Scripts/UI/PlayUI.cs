@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 
 public class PlayUI : StateUI
 {
+    private bool active = false;
     private Transform _player1;
     private Transform _player2;
 
@@ -21,12 +22,9 @@ public class PlayUI : StateUI
     private List<HexTile> _destructionPrediction;
     private LineRenderer _line;
 
-    private float _timer;
     private float _lingerTimer;
     private GameObject _lingerTile;
     private Player _curPlayer;
-
-    private bool _boosterUsed = false;
 
     private void Start()
     {
@@ -34,106 +32,105 @@ public class PlayUI : StateUI
         _gameboard = _canvas.Find("HexBoard");
         _gridController = _gameboard.GetComponent<HexGrid>();
 
-        _player1 = _canvas.Find("Player1");
-        _player2 = _canvas.Find("Player2");
+        _player1 = _canvas.Find("Player0");
+        _player2 = _canvas.Find("Player1");
         _line = _canvas.GetComponent<LineRenderer>();
         _dragTiles = new List<GameObject>();
         _destructionPrediction = new List<HexTile>();
 
-        SetColor(_player1, 0);
-        SetColor(_player2, 1);
-
-        RootController.Instance.GetPlayer(0).SetUI(_player1);
-        RootController.Instance.GetPlayer(1).SetUI(_player2);
-        RootController.Instance.GetPlayer(0).health = RootController.Instance.GetPlayer(0).settings.PlayerHealth;
-        RootController.Instance.GetPlayer(1).health = RootController.Instance.GetPlayer(1).settings.PlayerHealth;
-
         _curPlayer = RootController.Instance.GetPlayer(0);
-        RootController.Instance.GetPlayer(0).SetTimerActive(true);
-        RootController.Instance.GetPlayer(1).SetTimerActive(false);
+        //RootController.Instance.GetPlayer(0).SetTimerActive(true);
+        //RootController.Instance.GetPlayer(1).SetTimerActive(false);
     }
 
     private void Update()
     {
-        //if (_dragTiles.Count < 1) //no pause
-        if (RootController.Instance.ControlsEnabled() && RootController.Instance.StateController().State == StateBase.ESubState.Playing)
-            _timer += Time.deltaTime;
+        if (active) { 
+            PlayerEntity pe = RootController.Instance.GetPlayerEntity(RootController.Instance.GetCurrentPlayer().playerNumber);
+            if (pe)
+            {
+                if (RootController.Instance.ControlsEnabled() && RootController.Instance.StateController().State == StateBase.ESubState.Playing)
+                    pe.timer += Time.deltaTime;
 
-        _curPlayer.SetTimer(_timer);
+                pe.UpdateTimer();
 
-        if (_timer > Constants.MoveTimeInSeconds)
-        {
-            PassTurn();
+                if (pe.timer > Constants.MoveTimeInSeconds)
+                {
+                    PassTurn();
+                }
+            }
         }
     }
 
     protected override void ActiveConsequences()
     {
+        active = true;
         if (RootController.Instance.MultiplayerIsServer()) { 
             _gridController.SyncAllTiles();
-            //RootController.Instance.SpawnPlayerEntity();
-            //RootController.Instance.GetPlayerEntity().SetParent(_canvas.transform);
         }
 
         foreach (PlayerEntity player in RootController.Instance.GetPlayerEntities())
         {
             player.SetParentUI(_canvas.transform);
+            player.SetUI();
             player.GameStart();
         }
             
 
-        if (RootController.Instance.GetMyPlayer().playerNumber == 1)
+        if (RootController.Instance.GetMyPlayerEntity().number == 1)
         {
             _gridController.RotateBoard();
-            RootController.Instance.GetMyPlayer().SwapPortraitPositions();
+            RootController.Instance.GetMyPlayerEntity().SwapPortraitPositions();
         }
 
     }
 
     private void FixedUpdate()
     {
-        if (_dragFinger != null) {
-            //if (RootController.Instance.MultiplayerIsClient())
-                //TrackFinger();
+        if (active) { 
+            if (_dragFinger != null) {
+                //if (RootController.Instance.MultiplayerIsClient())
+                    //TrackFinger();
 
-                GameObject newTile = FindNearestTile();
-            if (newTile != null && !_dragTiles.Contains(newTile))
-            {
-                if (_dragTiles.Count == 0)
-                    _dragTiles.Add(newTile);
-                else if (newTile.GetComponent<HexTile>().type.Type == _dragTiles[0].GetComponent<HexTile>().type.Type)
+                    GameObject newTile = FindNearestTile();
+                if (newTile != null && !_dragTiles.Contains(newTile))
                 {
-                    if (newTile.GetComponent<HexTile>().IsAdjacentTo(_dragTiles[_dragTiles.Count - 1]))
+                    if (_dragTiles.Count == 0)
                         _dragTiles.Add(newTile);
-                }
-            } else if (newTile != null && _dragTiles.Contains(newTile))
-            {
-                if (_lingerTile == null)
-                {
-                    _lingerTile = newTile;
-                    _lingerTimer = 0;
-
-                } else
-                    _lingerTimer += Time.fixedDeltaTime;
-
-                if (_lingerTimer > .24f)
-                {
-                    int index = _dragTiles.IndexOf(newTile);
-                    for (int i = index + 1; i < _dragTiles.Count; i++)
+                    else if (newTile.GetComponent<HexTile>().type.Type == _dragTiles[0].GetComponent<HexTile>().type.Type)
                     {
-                        _dragTiles.RemoveAt(i);
+                        if (newTile.GetComponent<HexTile>().IsAdjacentTo(_dragTiles[_dragTiles.Count - 1]))
+                            _dragTiles.Add(newTile);
                     }
-                    _lingerTile = null;
+                } else if (newTile != null && _dragTiles.Contains(newTile))
+                {
+                    if (_lingerTile == null)
+                    {
+                        _lingerTile = newTile;
+                        _lingerTimer = 0;
+
+                    } else
+                        _lingerTimer += Time.fixedDeltaTime;
+
+                    if (_lingerTimer > .24f)
+                    {
+                        int index = _dragTiles.IndexOf(newTile);
+                        for (int i = index + 1; i < _dragTiles.Count; i++)
+                        {
+                            _dragTiles.RemoveAt(i);
+                        }
+                        _lingerTile = null;
+                    }
+
                 }
 
+                _line.positionCount = _dragTiles.Count;
+
+                foreach (HexTile tile in _gridController.AllTilesAsHexTile())
+                    tile.selected = false;
+
+                GetDestructionPrediction();
             }
-
-            _line.positionCount = _dragTiles.Count;
-
-            foreach (HexTile tile in _gridController.AllTilesAsHexTile())
-                tile.selected = false;
-
-            GetDestructionPrediction();
         }
     }
 
@@ -194,12 +191,15 @@ public class PlayUI : StateUI
 
         bool affectedTilesChanged = true;
         int tries = 30;
+        bool abort = false;
         for (int i = 0; i < tries; i++)
         {
-            List<HexTile> affectedTiles = _gridController.AllSelectedTilesAsHexTile();
-            affectedTilesChanged = IterateCollateral(affectedTiles, affectedTiles.Count);
-            if (!affectedTilesChanged)
-                return;
+            if (!abort) { 
+                List<HexTile> affectedTiles = _gridController.AllSelectedTilesAsHexTile();
+                affectedTilesChanged = IterateCollateral(affectedTiles, affectedTiles.Count);
+                if (!affectedTilesChanged)
+                    abort = true;
+            }
         }
 
         RootController.Instance.GetMyPlayerEntity().HandleSelectionData(_gridController.AllSelectedTilesAsHexTile());
@@ -269,25 +269,6 @@ public class PlayUI : StateUI
         return go;
     }
 
-    private void SetColor(Transform playerSelect, int playerNumber)
-    {
-        Player player = RootController.Instance.GetPlayer(playerNumber);
-        if (player)
-        {
-            SpecialPowerUI special1 = playerSelect.Find("Color1").GetComponent<SpecialPowerUI>();
-            special1.SetColorType(player.type1.Type, player);
-
-            SpecialPowerUI special2 = playerSelect.Find("Color2").GetComponent<SpecialPowerUI>();
-            special2.SetColorType(player.type2.Type, player);
-
-            SpecialPowerUI special3 = playerSelect.Find("Color3").GetComponent<SpecialPowerUI>();
-            special3.SetColorType(player.type3.Type, player);
-
-            SpecialPowerUI special4 = playerSelect.Find("Color4").GetComponent<SpecialPowerUI>();
-            special4.SetColorType(player.type4.Type, player);
-        }
-    }
-
     private void OnEnable()
     {
         Lean.Touch.LeanTouch.OnFingerDown += OnFingerDown;
@@ -302,7 +283,7 @@ public class PlayUI : StateUI
 
     void OnFingerDown(Lean.Touch.LeanFinger finger)
     {
-        if (RootController.Instance.ControlsEnabled() && RootController.Instance.IsMyTurn())
+        if (active && RootController.Instance.ControlsEnabled() && RootController.Instance.IsMyTurn())
         {
             if (finger.Index == 0)
             {
@@ -339,12 +320,12 @@ public class PlayUI : StateUI
                         _dragTiles.Clear();
                         _dragFinger = finger;
                     }
-                    if (_selectedUI.transform.parent == _curPlayer.transform)
+                    if (_selectedUI.transform.parent == _curPlayer.playerEntity.uiTransform)
                     {
-                        if ((_selectedUI.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4()) && !_boosterUsed)
+                        if ((_selectedUI.name == "Color1" && _curPlayer.playerEntity.CheckPowerLevel_1() || _selectedUI.name == "Color2" && _curPlayer.playerEntity.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.playerEntity.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.playerEntity.CheckPowerLevel_4()) && RootController.Instance.GetMyPlayerEntity().boosterUsed)
                         {
                             _selectedUI.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
-                            _boosterUsed = true;
+                            RootController.Instance.GetMyPlayerEntity().UseBooster();
                         }
                         else
                         {
@@ -372,9 +353,9 @@ public class PlayUI : StateUI
                             _selectedUI2 = result.gameObject;
                     }
 
-                    if (_selectedUI2.transform.parent == _curPlayer.transform)
+                    if (_selectedUI2.transform.parent == _curPlayer.playerEntity.uiTransform)
                     {
-                        if (_selectedUI2.name == "Color1" && _curPlayer.CheckPowerLevel_1() || _selectedUI2.name == "Color2" && _curPlayer.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.CheckPowerLevel_4())
+                        if (_selectedUI2.name == "Color1" && _curPlayer.playerEntity.CheckPowerLevel_1() || _selectedUI2.name == "Color2" && _curPlayer.playerEntity.CheckPowerLevel_2() || _selectedUI.name == "Color3" && _curPlayer.playerEntity.CheckPowerLevel_3() || _selectedUI.name == "Color4" && _curPlayer.playerEntity.CheckPowerLevel_4())
                         {
                             _selectedUI2.GetComponent<SpecialPowerUI>().SetActive(finger, _curPlayer);
                             EndTurn();
@@ -422,12 +403,14 @@ public class PlayUI : StateUI
         if (_gridController) { 
             foreach (HexTile tile in _gridController.AllTilesAsHexTile())
                 tile.selected = false;
+
+            RootController.Instance.GetMyPlayerEntity().ClearSelectionData();
         }
     }
 
     void Combo ()
     {
-        int count = 0;
+        //int count = 0;
         int totalCount = _dragTiles.Count;
 
         if (totalCount >= Constants.BoosterOneThreshhold)
@@ -439,26 +422,29 @@ public class PlayUI : StateUI
         _gridController.EmptyDestructionQueue();
         GetDestructionPrediction();
         List<HexTile> toDestroyAlso = _gridController.AllSelectedTilesAsHexTile();
-        foreach (GameObject go in _dragTiles)
+        /*foreach (GameObject go in _dragTiles)
         {
             count++;
             _gridController.DestroyTile(go, _curPlayer, count, totalCount);
-        }
+        }*/
+        RootController.Instance.GetMyPlayerEntity().InitiateCombo(_dragTiles);
         foreach (HexTile tile in toDestroyAlso)
         {
-            if (!_dragTiles.Contains(tile.gameObject))
-                _gridController.DestroyTile(tile.gameObject, _curPlayer, totalCount, totalCount);
+            if (!_dragTiles.Contains(tile.gameObject)) { 
+                //_gridController.DestroyTile(tile.gameObject, _curPlayer, totalCount, totalCount);
+                RootController.Instance.GetMyPlayerEntity().CollateralDamage(tile.xy, totalCount);
+            }
         }
 
-        _curPlayer.FillPower(_dragTiles[0].GetComponent<HexTile>().type.Type, _dragTiles.Count);
-        RootController.Instance.NextPlayer(_curPlayer.playerNumber).exploding = false;
+        _curPlayer.playerEntity.FillPower(_dragTiles[0].GetComponent<HexTile>().type.Type, _dragTiles.Count);
+        RootController.Instance.NextPlayer(_curPlayer.playerNumber).playerEntity.exploding = false;
 
         EndTurn();
     }
 
     void PassTurn ()
     {
-        _curPlayer.Heal(5);
+        _curPlayer.playerEntity.Heal(5);
 
         _dragFinger = null;
         if (_dragTiles != null)
@@ -473,21 +459,11 @@ public class PlayUI : StateUI
 
     private void EndTurn ()
     {
-        if (_curPlayer.extraTurn)
+        if (_curPlayer.playerEntity.extraTurn)
         {
-            _curPlayer.EndExtraTurnEffect();
+            _curPlayer.playerEntity.EndExtraTurnEffect();
         } else { 
-            Player nextPlayer = RootController.Instance.NextPlayer(_curPlayer.playerNumber);
-
-            _timer = 0;
-            _curPlayer.SetTimerActive(false);
-            _curPlayer.turn++;
-
-            _curPlayer = nextPlayer;
-            nextPlayer.SetTimerActive(true);
-            RootController.Instance.SetCurrentPlayer(nextPlayer);
-
-            _boosterUsed = false;
+            RootController.Instance.GetMyPlayerEntity().EndTurn();
         }
     }
 }

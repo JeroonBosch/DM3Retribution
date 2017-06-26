@@ -20,7 +20,23 @@ public class TileExplosionUI : MonoBehaviour
         _damageMultiplier = damageMultiplier;
 
         _target = target; //overridden, but kept as backup if we ever have particles to fly to the combo-meter
-        _target = targetPlayer.transform;
+        _target = targetPlayer.playerEntity.uiTransform;
+        _targetPlayer = targetPlayer;
+        _rt = GetComponent<RectTransform>();
+        _startPosition = _rt.position;
+        _random = Random.Range(-1f, 1f);
+
+        RootController.Instance.DisableControls();
+
+        //_travelTime = .4f + count * .5f;
+        Destroy(this.gameObject, _travelTime);
+    }
+
+    public void Init(Player targetPlayer, float damageMultiplier)
+    {
+        _damageMultiplier = damageMultiplier;
+
+        _target = targetPlayer.playerEntity.uiTransform;
         _targetPlayer = targetPlayer;
         _rt = GetComponent<RectTransform>();
         _startPosition = _rt.position;
@@ -79,7 +95,7 @@ public class TileExplosionUI : MonoBehaviour
     private void ApplyDamage()
     {
         _damageApplied = true;
-        _targetPlayer.NormalExplosion();
-        _targetPlayer.ReceiveDamage(1 * _damageMultiplier);
+        _targetPlayer.playerEntity.NormalExplosion();
+        _targetPlayer.playerEntity.ReceiveDamage(1 * _damageMultiplier);
     }
 }

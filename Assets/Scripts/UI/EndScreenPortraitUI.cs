@@ -11,9 +11,9 @@ public class EndScreenPortraitUI : MonoBehaviour
         if (RootController.Instance.GetWinnerPlayer())
         {
             if (winner)
-                GetComponent<Image>().sprite = RootController.Instance.GetWinnerPlayer().GetPortraitSprite();
+                GetComponent<Image>().sprite = RootController.Instance.GetWinnerPlayer().playerEntity.GetPortraitSprite();
             else
-                GetComponent<Image>().sprite = RootController.Instance.NextPlayer(RootController.Instance.GetWinnerPlayer().playerNumber).GetPortraitSprite();
+                GetComponent<Image>().sprite = RootController.Instance.NextPlayer(RootController.Instance.GetWinnerPlayer().playerNumber).playerEntity.GetPortraitSprite();
 
         }
     }

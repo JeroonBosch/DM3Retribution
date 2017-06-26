@@ -160,10 +160,10 @@ public class HexTile : MonoBehaviour {
             explosion.transform.SetParent(transform.parent.parent.parent);
             explosion.transform.position = transform.position;
 
-            Transform powerObject = _destroyedBy.GetPowerObjectByType(_type.Type);
+            //Transform powerObject = _destroyedBy.GetPowerObjectByType(_type.Type);
             Player targetPlayer = RootController.Instance.NextPlayer(player.playerNumber);
             float damageMultiplier = Mathf.Sqrt(_currentCombo);
-            explosion.GetComponent<TileExplosionUI>().Init(powerObject, targetPlayer, damageMultiplier);
+            explosion.GetComponent<TileExplosionUI>().Init(targetPlayer, damageMultiplier);
         }
     }
 }
