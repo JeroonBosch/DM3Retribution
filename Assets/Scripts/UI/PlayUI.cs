@@ -28,6 +28,8 @@ public class PlayUI : StateUI
     private PlayerEntity _curPlayer;
     private Text _curPlayerText;
 
+    private float syncInterval = 0f;
+
     private void Start()
     {
         _canvas = transform.Find("Canvas");
@@ -66,6 +68,14 @@ public class PlayUI : StateUI
 
             _curPlayer = RootController.Instance.GetCurrentPlayerEntity();
             _curPlayerText.text = "Cur player: " + RootController.Instance.GetCurrentPlayer().number + " " + RootController.Instance.ControlsEnabled() + " " + RootController.Instance.IsMyTurn();
+
+            
+            if (syncInterval > 1f)
+            {
+                _gridController.ResortTiles();
+                syncInterval = 0f;
+            }
+            syncInterval += Time.deltaTime;
         }
     }
 

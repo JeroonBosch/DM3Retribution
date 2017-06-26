@@ -110,6 +110,27 @@ public class HexGrid : NetworkBehaviour
         }
     }
 
+    public void ResortTiles()
+    {
+        if (isServer)
+        {
+            foreach (HexRow row in rows)
+            {
+                RpcRecountTiles(row.number);
+
+                foreach (HexTile tile in row.tiles)
+                {
+                    if (tile.gameObject.GetComponent<BoosterThreeHexTile>())
+                        RpcSetBooster(Constants.BoosterThreeThreshhold, tile.xy, tile.type.Type);
+                    else if (tile.gameObject.GetComponent<BoosterTwoHexTile>())
+                        RpcSetBooster(Constants.BoosterTwoThreshhold, tile.xy, tile.type.Type);
+                    else if (tile.gameObject.GetComponent<BoosterOneHexTile>())
+                        RpcSetBooster(Constants.BoosterOneThreshhold, tile.xy, tile.type.Type);
+                }
+            }
+        }
+    }
+
     [ClientRpc]
     void RpcUpdateTileType (Vector2 xy, TileTypes.ESubState type)
     {
@@ -267,7 +288,7 @@ public class HexGrid : NetworkBehaviour
             else
                 row.tiles.Add(tile);
 
-            Debug.Log("Server added tile to Row " + row.number);
+            Debug.Log("Server added tile to Row " + row.number + " w index: " + row.tiles.IndexOf(tile));
             RpcAddTile(tile.type.Type, row.number, direction);
         }
 
@@ -276,7 +297,7 @@ public class HexGrid : NetworkBehaviour
             tile.transform.name = "Tile (" + row.number + ", " + row.tiles.IndexOf(tile) + ")"; //F.e. Tile (0,7)
             tile.xy = new Vector2(row.number, row.tiles.IndexOf(tile));
         }
-        RpcRecountTiles(row.number);
+        //RpcRecountTiles(row.number);
     }
 
     [ClientRpc]
@@ -297,7 +318,13 @@ public class HexGrid : NetworkBehaviour
             else
                 row.tiles.Add(tile);
 
-            Debug.Log("Client added tile to Row " + row.number);
+            Debug.Log("Client added tile to Row " + row.number + " w index: " + row.tiles.IndexOf(tile));
+
+            foreach (HexTile otherTiles in row.tiles)
+            {
+                otherTiles.transform.name = "Tile (" + row.number + ", " + row.tiles.IndexOf(otherTiles) + ")"; //F.e. Tile (0,7)
+                otherTiles.xy = new Vector2(row.number, row.tiles.IndexOf(otherTiles));
+            }
         }
 
     }
@@ -311,6 +338,19 @@ public class HexGrid : NetworkBehaviour
             tile.transform.name = "Tile (" + row.number + ", " + row.tiles.IndexOf(tile) + ")"; //F.e. Tile (0,7)
             tile.xy = new Vector2(row.number, row.tiles.IndexOf(tile));
         }
+    }
+
+    [ClientRpc]
+    private void RpcSetBooster(int totalCount, Vector2 position, TileTypes.ESubState type)
+    {
+        HexTile tile = FindHexTileAtPosition(position);
+
+        if (totalCount >= Constants.BoosterThreeThreshhold && !tile.gameObject.GetComponent<BoosterThreeHexTile>())
+            CreateBoosterAt(tile, totalCount, type);
+        else if (totalCount >= Constants.BoosterTwoThreshhold && !tile.gameObject.GetComponent<BoosterTwoHexTile>())
+            CreateBoosterAt(tile, totalCount, type);
+        else if (totalCount >= Constants.BoosterOneThreshhold && !tile.gameObject.GetComponent<BoosterOneHexTile>())
+            CreateBoosterAt(tile, totalCount, type);
     }
 
     private void ConvertTileToBooster(Vector2 position, TileTypes.ESubState requestedType, string path)
