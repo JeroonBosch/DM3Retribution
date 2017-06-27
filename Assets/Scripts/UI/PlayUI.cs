@@ -7,8 +7,6 @@ using UnityEngine.EventSystems;
 public class PlayUI : StateUI
 {
     private bool active = false;
-    private Transform _player1;
-    private Transform _player2;
 
     private Transform _canvas;
     private Transform _gameboard;
@@ -36,8 +34,6 @@ public class PlayUI : StateUI
         _gameboard = _canvas.Find("HexBoard");
         _gridController = _gameboard.GetComponent<HexGrid>();
 
-        _player1 = _canvas.Find("Player0");
-        _player2 = _canvas.Find("Player1");
         _line = _canvas.GetComponent<LineRenderer>();
         _dragTiles = new List<GameObject>();
         _destructionPrediction = new List<HexTile>();

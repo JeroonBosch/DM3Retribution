@@ -102,8 +102,13 @@ public class SpecialPowerUI : MonoBehaviour {
         _active = true;
         _finger = finger;
 
-        curPlayer.ActivateSpecialPower(ref _activeObject, _type.Type);
+        curPlayer.ActivateSpecialPower(_type.Type);
         _curPos = _finger.GetWorldPosition(1f, Camera.current);
         _lastPos = _finger.GetWorldPosition(1f, Camera.current);
+    }
+    
+    public void SetActiveObject (GameObject obj)
+    {
+        _activeObject = obj;
     }
 }

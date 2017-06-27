@@ -639,7 +639,7 @@ public class PlayerEntity : NetworkBehaviour
 
     public void BlueTileEffect()
     {
-        if (isClient)
+        if (isClient && hasAuthority)
             CmdBluePower(true);
     }
 
@@ -667,8 +667,8 @@ public class PlayerEntity : NetworkBehaviour
 
     public void EndBlueTileEffect()
     {
-        if (isClient)
-            CmdBluePower(false);
+        if (isClient && hasAuthority)
+            CmdBluePower(false); 
     }
 
     public void ExtraTurnEffect()
@@ -778,26 +778,68 @@ public class PlayerEntity : NetworkBehaviour
         grid.SyncAllTiles();
     }
 
-    public void ActivateSpecialPower (ref GameObject refObject, TileTypes.ESubState type)
+    public void ActivateSpecialPower (TileTypes.ESubState type)
     {
-
         if (type == TileTypes.ESubState.red)
-            refObject = Instantiate(Resources.Load<GameObject>("Powers/SpecialSelect"));
+            CmdSummonPower("Powers/SpecialSelect", type);
         else if (type == TileTypes.ESubState.yellow)
-            refObject = Instantiate(Resources.Load<GameObject>("Powers/YellowSpecial"));
+            CmdSummonPower("Powers/YellowSpecial", type);
         else if (type == TileTypes.ESubState.blue)
             BlueTileEffect(); //Shield
         else if (type == TileTypes.ESubState.green)
             GreenTileEffect();
+    }
 
+    [Command]
+    private void CmdSummonPower (string path, TileTypes.ESubState type)
+    {
+        GameObject newObj = Instantiate(Resources.Load<GameObject>(path));
+        SpecialPowerUI[] check = GameObject.FindObjectsOfType<SpecialPowerUI>();
+        SpecialPowerUI usedPower = null;
+        Transform parentObj = null;
 
-        if (refObject != null)
+        for (int i = 0; i < check.Length; i++)
         {
-            NetworkServer.SpawnWithClientAuthority(refObject, NetworkServer.connections[number].playerControllers[0].gameObject);
-            refObject.name = "SpecialSelect";
-            refObject.transform.SetParent(this.transform.parent.parent, false);
-            refObject.GetComponent<MissileUI>().target = RootController.Instance.NextPE(number);
-            refObject.GetComponent<MissileUI>().Type = type;
+            if (check[i].Type == type) {
+                parentObj = check[i].transform.parent.parent;
+                usedPower = check[i];
+            }
         }
+
+        if (newObj != null)
+        {
+            NetworkServer.SpawnWithClientAuthority(newObj, NetworkServer.connections[number]);
+            RpcSummonPower(type);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSummonPower (TileTypes.ESubState type)
+    {
+        SpecialPowerUI[] powers = GameObject.FindObjectsOfType<SpecialPowerUI>();
+        SpecialPowerUI usedPower = null;
+
+        for (int i = 0; i < powers.Length; i++)
+        {
+            if (powers[i].Type == type)
+            {
+                usedPower = powers[i];
+            }
+        }
+
+        MissileUI[] missiles = GameObject.FindObjectsOfType<MissileUI>();
+
+        for (int i = 0; i < missiles.Length; i++)
+        {
+            GameObject newObj = missiles[i].gameObject;
+            usedPower.SetActiveObject(newObj);
+
+            newObj.name = "SpecialSelect";
+            newObj.transform.SetParent(usedPower.transform.parent.parent, false);
+            newObj.GetComponent<MissileUI>().target = RootController.Instance.NextPE(number);
+            newObj.GetComponent<MissileUI>().Type = type;
+        }
+
+
     }
 }

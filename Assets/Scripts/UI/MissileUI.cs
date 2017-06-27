@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class MissileUI : MonoBehaviour
+public class MissileUI : NetworkBehaviour
 {
     private PlayerEntity _target;
     public PlayerEntity target { set { _target = value;  } }
@@ -11,7 +12,7 @@ public class MissileUI : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name == _target.uiTransform.name)
+        if (collision.gameObject.name == _target.uiTransform.name) //Object reference not set... TODO
         {
             if (_type.Type == TileTypes.ESubState.yellow) { 
                 _target.ReceiveDamage((int)RootController.Instance.NextPE(_target.number).YellowValue);
