@@ -43,21 +43,15 @@ public class HexGrid : NetworkBehaviour
             rowObject.name = "Row " + x;
             rows.Add(rowObject.GetComponent<HexRow>());
 
-            //RootController.Instance.SpawnOnServer(rowObject);
-
             for (int y = 0; y < Constants.gridSizeHorizontal; y++)
             {
                 GameObject newTile = Instantiate(Resources.Load("HexTile")) as GameObject;
                 newTile.transform.SetParent(rowObject.transform, false);
                 HexTile tile = newTile.GetComponent<HexTile>();
 
-                //int hori = i % Constants.gridSizeHorizontal; //Row
-                //int vert = Mathf.FloorToInt(i / Constants.gridSizeHorizontal);
                 tile.xy = new Vector2(x, y);
                 newTile.name = "Tile (" + x + "," + y + ")"; //F.e. Tile (0,7)
                 tile.InitRandom();
-
-                //RootController.Instance.SpawnOnServer(newTile);
 
                 row.tiles.Add(tile);
             }
@@ -66,22 +60,10 @@ public class HexGrid : NetworkBehaviour
 
     private void LateUpdate()
     {
-        //Server-side only.
-        if (!isServer)
-        {
-            return;
-        }
-        if (rows != null)
+        if (rows != null && isServer)
         {
             foreach (HexRow row in rows)
             {
-                //RootController.Instance.SetRPCParent(row.gameObject.name, row.gameObject, gameObject, false);
-
-                /*foreach (HexTile tile in row.tiles) {
-                    Debug.Log("Trying to update tile types.");
-                    RpcUpdateTileType(tile.xy, tile.type.Type);
-                }*/
-
                 if (row.tiles.Count < Constants.gridSizeHorizontal)
                     Refill(row, "left");
             }
@@ -121,11 +103,19 @@ public class HexGrid : NetworkBehaviour
                 foreach (HexTile tile in row.tiles)
                 {
                     if (tile.gameObject.GetComponent<BoosterThreeHexTile>())
-                        RpcSetBooster(Constants.BoosterThreeThreshhold, tile.xy, tile.type.Type);
+                        RootController.Instance.GetMyPlayerEntity().RequestBoosterAt(tile.xy, Constants.BoosterThreeThreshhold, tile.type.Type);
                     else if (tile.gameObject.GetComponent<BoosterTwoHexTile>())
-                        RpcSetBooster(Constants.BoosterTwoThreshhold, tile.xy, tile.type.Type);
+                        RootController.Instance.GetMyPlayerEntity().RequestBoosterAt(tile.xy, Constants.BoosterTwoThreshhold, tile.type.Type);
                     else if (tile.gameObject.GetComponent<BoosterOneHexTile>())
-                        RpcSetBooster(Constants.BoosterOneThreshhold, tile.xy, tile.type.Type);
+                        RootController.Instance.GetMyPlayerEntity().RequestBoosterAt(tile.xy, Constants.BoosterOneThreshhold, tile.type.Type);
+
+                    //Debug
+                    if (tile.gameObject.GetComponent<BoosterThreeHexTile>())
+                        Debug.Log("SERVER: Found a BoosterThree.");
+                    else if (tile.gameObject.GetComponent<BoosterTwoHexTile>())
+                        Debug.Log("SERVER: Found a BoosterTwo.");
+                    else if (tile.gameObject.GetComponent<BoosterOneHexTile>())
+                        Debug.Log("SERVER: Found a BoosterOne.");
                 }
             }
         }
@@ -270,6 +260,26 @@ public class HexGrid : NetworkBehaviour
         }
     }
 
+    public void CreateBoosterAt(Vector2 position, int totalCount, TileTypes.ESubState requestedType)
+    {
+        Debug.Log(position + " Booster requested (" + totalCount + ") of type " + requestedType);
+        _boosterRequest = position;
+        _boosterType = requestedType;
+
+        if (totalCount >= Constants.BoosterThreeThreshhold)
+        {
+            _boosterPath = "BoosterThree";
+        }
+        else if (totalCount >= Constants.BoosterTwoThreshhold)
+        {
+            _boosterPath = "BoosterTwo";
+        }
+        else if (totalCount >= Constants.BoosterOneThreshhold)
+        {
+            _boosterPath = "BoosterOne";
+        }
+    }
+
     private void Refill(HexRow row, string direction)
     {
         int tilesNeeded = Constants.gridSizeHorizontal - row.tiles.Count;
@@ -340,21 +350,9 @@ public class HexGrid : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    private void RpcSetBooster(int totalCount, Vector2 position, TileTypes.ESubState type)
-    {
-        HexTile tile = FindHexTileAtPosition(position);
-
-        if (totalCount >= Constants.BoosterThreeThreshhold && !tile.gameObject.GetComponent<BoosterThreeHexTile>())
-            CreateBoosterAt(tile, totalCount, type);
-        else if (totalCount >= Constants.BoosterTwoThreshhold && !tile.gameObject.GetComponent<BoosterTwoHexTile>())
-            CreateBoosterAt(tile, totalCount, type);
-        else if (totalCount >= Constants.BoosterOneThreshhold && !tile.gameObject.GetComponent<BoosterOneHexTile>())
-            CreateBoosterAt(tile, totalCount, type);
-    }
-
     private void ConvertTileToBooster(Vector2 position, TileTypes.ESubState requestedType, string path)
     {
+        Debug.Log("Converting tile at " + position + " to " + path);
         HexRow row = rows[(int)position.x];
         HexTile targetTile = row.tiles.Find(item => item.x == position.x && item.y == position.y);
 
@@ -374,5 +372,32 @@ public class HexGrid : NetworkBehaviour
             GameObject boosterIcon = Instantiate(Resources.Load(path + "TileIcon")) as GameObject;
             boosterIcon.transform.SetParent(newTile.transform, false);
         }
+    }
+
+    public bool TileAtPositionIsBooster(Vector2 position, int totalCount, TileTypes.ESubState requestedType)
+    {
+        bool isBooster = false;
+
+        HexTile tile = FindHexTileAtPosition(position);
+        if (tile)
+        {
+            if (tile.type.Type == requestedType)
+            {
+                if (tile.gameObject.GetComponent<BoosterThreeHexTile>() && totalCount >= Constants.BoosterThreeThreshhold)
+                {
+                    isBooster = true;
+                }
+                if (tile.gameObject.GetComponent<BoosterTwoHexTile>() && totalCount >= Constants.BoosterTwoThreshhold)
+                {
+                    isBooster = true;
+                }
+                if (tile.gameObject.GetComponent<BoosterOneHexTile>() && totalCount >= Constants.BoosterOneThreshhold)
+                {
+                    isBooster = true;
+                }
+            }
+        }
+
+        return isBooster;
     }
 }

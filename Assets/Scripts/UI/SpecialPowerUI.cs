@@ -102,13 +102,16 @@ public class SpecialPowerUI : MonoBehaviour {
         _active = true;
         _finger = finger;
         if (_type.Type == TileTypes.ESubState.red)
-            _activeObject = Instantiate(Resources.Load<GameObject>("SpecialSelect"));
+            _activeObject = Instantiate(Resources.Load<GameObject>("Powers/SpecialSelect"));
         else if (_type.Type == TileTypes.ESubState.yellow)
-            _activeObject = Instantiate(Resources.Load<GameObject>("YellowSpecial"));
+            _activeObject = Instantiate(Resources.Load<GameObject>("Powers/YellowSpecial"));
         else if (_type.Type == TileTypes.ESubState.blue)
             curPlayer.BlueTileEffect(); //Shield
         else if (_type.Type == TileTypes.ESubState.green)
             curPlayer.GreenTileEffect();
+
+        if (_activeObject != null)
+            RootController.Instance.SpawnOnServer(_activeObject);
 
         if (_activeObject != null)
         {

@@ -443,7 +443,8 @@ public class PlayUI : StateUI
         if (totalCount >= Constants.BoosterOneThreshhold)
         {
             HexTile tile = _dragTiles[_dragTiles.Count - 1].GetComponent<HexTile>();
-            _gridController.CreateBoosterAt(tile, totalCount, tile.type.Type);
+            RootController.Instance.GetMyPlayerEntity().RequestBoosterAt(tile.xy, totalCount, tile.type.Type);
+            //_gridController.CreateBoosterAt(tile, totalCount, tile.type.Type);
         }
 
         _gridController.EmptyDestructionQueue();

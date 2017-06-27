@@ -399,7 +399,27 @@ public class PlayerEntity : NetworkBehaviour
             grid.DestroyTile(tile.gameObject, RootController.Instance.GetPlayerEntity(playerNumber), count, totalCount);
     }
 
+    public void RequestBoosterAt (Vector2 position, int totalCount, TileTypes.ESubState type)
+    {
+        CmdRequestBooster(position, totalCount, type);
+    }
 
+    [Command]
+    private void CmdRequestBooster (Vector2 position, int totalCount, TileTypes.ESubState type)
+    {
+        if (!grid.TileAtPositionIsBooster(position, totalCount, type))
+            grid.CreateBoosterAt(position, totalCount, type);
+
+        if (isServer)
+            RpcRequestBooster(position, totalCount, type);
+    }
+
+    [ClientRpc]
+    private void RpcRequestBooster (Vector2 position, int totalCount, TileTypes.ESubState type)
+    {
+        if (!grid.TileAtPositionIsBooster(position, totalCount, type))
+            grid.CreateBoosterAt(position, totalCount, type);
+    }
 
 
 
@@ -502,14 +522,15 @@ public class PlayerEntity : NetworkBehaviour
 
             if (health <= 0f)
             {
-                //RootController.Instance.TriggerEndScreen(this); //TODO
+                if (isServer)
+                    RootController.Instance.TriggerEndScreen(this);
             }
         }
         else if (shielded && shieldEffect == null)
         {
             if (uiTransform)
             {
-                shieldEffect = Instantiate(Resources.Load<GameObject>("BlueTileEffect"));
+                shieldEffect = Instantiate(Resources.Load<GameObject>("Powers/BlueTileEffect"));
                 shieldEffect.transform.SetParent(uiTransform.parent);
                 shieldEffect.transform.position = uiTransform.position;
             }
@@ -632,7 +653,7 @@ public class PlayerEntity : NetworkBehaviour
     {
         if (uiTransform)
         {
-            extraTurnEffect = Instantiate(Resources.Load<GameObject>("BlueTileEffect"));
+            extraTurnEffect = Instantiate(Resources.Load<GameObject>("Powers/BlueTileEffect"));
             extraTurnEffect.transform.SetParent(uiTransform.parent);
             extraTurnEffect.transform.position = uiTransform.position;
 
@@ -651,7 +672,7 @@ public class PlayerEntity : NetworkBehaviour
     {
         if (uiTransform)
         {
-            GameObject explosion = Instantiate(Resources.Load<GameObject>("GreenTileEffect"));
+            GameObject explosion = Instantiate(Resources.Load<GameObject>("Powers/GreenTileEffect"));
             explosion.transform.SetParent(uiTransform.parent);
             explosion.transform.position = uiTransform.position;
 

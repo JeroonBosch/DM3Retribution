@@ -64,6 +64,19 @@ public class RootController : NetworkBehaviour
             NetworkServer.Spawn(obj);
     }
 
+    public void SpawnOnServer(GameObject obj, bool wAuth)
+    {
+        if (NetworkServer.active)
+        {
+            if (wAuth)
+                NetworkServer.SpawnWithClientAuthority(obj, GetCurrentPlayerEntity().gameObject);
+            else
+                NetworkServer.Spawn(obj);
+        }
+            
+           
+    }
+
     [Command]
     public void CmdEngageClicked ()
     {
