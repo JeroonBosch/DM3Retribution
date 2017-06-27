@@ -639,14 +639,36 @@ public class PlayerEntity : NetworkBehaviour
 
     public void BlueTileEffect()
     {
-        shielded = true;
+        if (isClient)
+            CmdBluePower(true);
+    }
+
+    [Command]
+    private void CmdBluePower (bool state)
+    {
+        shielded = state;
+
+        if (!state)
+            if (shieldEffect)
+                Destroy(shieldEffect);
+
+        if (isServer)
+            RpcBluePower(state);
+    }
+    [ClientRpc]
+    private void RpcBluePower (bool state)
+    {
+        shielded = state;
+
+        if (!state)
+            if (shieldEffect)
+                Destroy(shieldEffect);
     }
 
     public void EndBlueTileEffect()
     {
-        shielded = false;
-        if (shieldEffect)
-            Destroy(shieldEffect);
+        if (isClient)
+            CmdBluePower(false);
     }
 
     public void ExtraTurnEffect()
@@ -670,6 +692,19 @@ public class PlayerEntity : NetworkBehaviour
 
     public void GreenTileEffect()
     {
+        if (isClient)
+            CmdGreenPower();
+    }
+
+    [Command]
+    private void CmdGreenPower ()
+    {
+        if (isServer)
+            RpcGreenPower();
+    }
+    [ClientRpc]
+    private void RpcGreenPower ()
+    {
         if (uiTransform)
         {
             GameObject explosion = Instantiate(Resources.Load<GameObject>("Powers/GreenTileEffect"));
@@ -681,7 +716,6 @@ public class PlayerEntity : NetworkBehaviour
             Heal((int)GreenValue);
         }
     }
-
 
     public Transform GetPowerObjectByType(TileTypes.ESubState type)
     {
@@ -742,5 +776,28 @@ public class PlayerEntity : NetworkBehaviour
         _boosterUsed = false;
 
         grid.SyncAllTiles();
+    }
+
+    public void ActivateSpecialPower (ref GameObject refObject, TileTypes.ESubState type)
+    {
+
+        if (type == TileTypes.ESubState.red)
+            refObject = Instantiate(Resources.Load<GameObject>("Powers/SpecialSelect"));
+        else if (type == TileTypes.ESubState.yellow)
+            refObject = Instantiate(Resources.Load<GameObject>("Powers/YellowSpecial"));
+        else if (type == TileTypes.ESubState.blue)
+            BlueTileEffect(); //Shield
+        else if (type == TileTypes.ESubState.green)
+            GreenTileEffect();
+
+
+        if (refObject != null)
+        {
+            NetworkServer.SpawnWithClientAuthority(refObject, NetworkServer.connections[number].playerControllers[0].gameObject);
+            refObject.name = "SpecialSelect";
+            refObject.transform.SetParent(this.transform.parent.parent, false);
+            refObject.GetComponent<MissileUI>().target = RootController.Instance.NextPE(number);
+            refObject.GetComponent<MissileUI>().Type = type;
+        }
     }
 }

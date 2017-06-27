@@ -101,27 +101,9 @@ public class SpecialPowerUI : MonoBehaviour {
 
         _active = true;
         _finger = finger;
-        if (_type.Type == TileTypes.ESubState.red)
-            _activeObject = Instantiate(Resources.Load<GameObject>("Powers/SpecialSelect"));
-        else if (_type.Type == TileTypes.ESubState.yellow)
-            _activeObject = Instantiate(Resources.Load<GameObject>("Powers/YellowSpecial"));
-        else if (_type.Type == TileTypes.ESubState.blue)
-            curPlayer.BlueTileEffect(); //Shield
-        else if (_type.Type == TileTypes.ESubState.green)
-            curPlayer.GreenTileEffect();
 
-        if (_activeObject != null)
-            RootController.Instance.SpawnOnServer(_activeObject);
-
-        if (_activeObject != null)
-        {
-            _activeObject.name = "SpecialSelect";
-            _activeObject.transform.SetParent(this.transform.parent.parent, false);
-            _activeObject.GetComponent<MissileUI>().target = RootController.Instance.NextPE(curPlayer.number);
-            _activeObject.GetComponent<MissileUI>().Type = _type.Type;
-
-            _curPos = _finger.GetWorldPosition(1f, Camera.current);
-            _lastPos = _finger.GetWorldPosition(1f, Camera.current);
-        }
+        curPlayer.ActivateSpecialPower(ref _activeObject, _type.Type);
+        _curPos = _finger.GetWorldPosition(1f, Camera.current);
+        _lastPos = _finger.GetWorldPosition(1f, Camera.current);
     }
 }

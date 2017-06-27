@@ -108,14 +108,6 @@ public class HexGrid : NetworkBehaviour
                         RootController.Instance.GetMyPlayerEntity().RequestBoosterAt(tile.xy, Constants.BoosterTwoThreshhold, tile.type.Type);
                     else if (tile.gameObject.GetComponent<BoosterOneHexTile>())
                         RootController.Instance.GetMyPlayerEntity().RequestBoosterAt(tile.xy, Constants.BoosterOneThreshhold, tile.type.Type);
-
-                    //Debug
-                    if (tile.gameObject.GetComponent<BoosterThreeHexTile>())
-                        Debug.Log("SERVER: Found a BoosterThree.");
-                    else if (tile.gameObject.GetComponent<BoosterTwoHexTile>())
-                        Debug.Log("SERVER: Found a BoosterTwo.");
-                    else if (tile.gameObject.GetComponent<BoosterOneHexTile>())
-                        Debug.Log("SERVER: Found a BoosterOne.");
                 }
             }
         }
