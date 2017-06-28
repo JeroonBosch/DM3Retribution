@@ -18,18 +18,13 @@ public class MissileUI : NetworkBehaviour
             if (collision.gameObject.name == _target.uiTransform.name) //Object reference not set... TODO
             {
                 if (_type.Type == TileTypes.ESubState.yellow) {
-                    if (hasAuthority)
-                    {
-                        CmdDamageTarget(_target.number, _type.Type);
-                    }
+                    CmdDamageTarget(_target.number, _type.Type);
                 } else if (_type.Type == TileTypes.ESubState.red) {
-                    if (hasAuthority)
-                    {
-                        CmdDamageTarget(_target.number, _type.Type);
-                    }
+                    CmdDamageTarget(_target.number, _type.Type);
                 }
 
-                Destroy(gameObject);
+                if (!isServer)
+                    CmdDestroy();
             }
         }
     }
@@ -37,15 +32,27 @@ public class MissileUI : NetworkBehaviour
     private void Awake()
     {
         _type = new TileTypes();
-        if (hasAuthority)
-        {
-            Destroy(gameObject, 4f);
-        }
+        Destroy(gameObject, 4f);
     }
 
     private void OnDestroy()
     {
         //RootController.Instance.EnableControls();
+        if (hasAuthority)
+        {
+            CmdDestroy();
+        }
+    }
+    [Command]
+    private void CmdDestroy()
+    {
+        RpcDestroy();
+    }
+    [ClientRpc]
+    private void RpcDestroy()
+    {
+        if (gameObject)
+            Destroy(gameObject);
     }
 
     [Command]

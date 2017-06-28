@@ -794,20 +794,30 @@ public class PlayerEntity : NetworkBehaviour
     private void CmdSummonPower (string path, TileTypes.ESubState type)
     {
         GameObject newObj = Instantiate(Resources.Load<GameObject>(path));
-        SpecialPowerUI[] check = GameObject.FindObjectsOfType<SpecialPowerUI>();
+        SpecialPowerUI[] powers = GameObject.FindObjectsOfType<SpecialPowerUI>();
+        SpecialPowerUI usedPower = null;
         Transform parentObj = null;
-
-        for (int i = 0; i < check.Length; i++)
+        for (int i = 0; i < powers.Length; i++)
         {
-            if (check[i].Type == type) {
-                parentObj = check[i].transform.parent.parent;
+            if (powers[i].Type == type)
+            {
+                usedPower = powers[i];
+                parentObj = powers[i].transform.parent.parent;
             }
         }
 
         if (newObj != null)
         {
-            NetworkServer.SpawnWithClientAuthority(newObj, NetworkServer.connections[number]);
+            NetworkServer.SpawnWithClientAuthority(newObj, NetworkServer.connections[RootController.Instance.GetNextPlayerEntity().number]);
             RpcSummonPower(type);
+
+
+            usedPower.SetActiveObject(newObj);
+
+            newObj.name = "SpecialSelect";
+            newObj.transform.SetParent(usedPower.transform.parent.parent, false);
+            newObj.GetComponent<MissileUI>().target = RootController.Instance.NextPE(number);
+            newObj.GetComponent<MissileUI>().Type = type;
         }
     }
 
