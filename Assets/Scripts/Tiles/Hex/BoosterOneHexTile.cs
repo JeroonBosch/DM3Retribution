@@ -22,8 +22,7 @@ public class BoosterOneHexTile : HexTile
         {
             _image.sprite = type.HexSprite;
             _originalType = _type.Type;
-        }
-            
+        }  
     }
 
     public new List<HexTile> OtherTilesToExplode(HexGrid grid)

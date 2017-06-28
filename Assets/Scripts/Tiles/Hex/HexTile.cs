@@ -33,7 +33,7 @@ public class HexTile : MonoBehaviour {
     protected virtual void Awake()
     {
         _type = new TileTypes();
-        _type.Type = TileTypes.ESubState.blue; //Needs randomization;
+        _type.Type = TileTypes.ESubState.blue;
         _image = gameObject.GetComponent<Image>();
     }
 

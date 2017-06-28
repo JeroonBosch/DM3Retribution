@@ -14,10 +14,6 @@ public class RootController : NetworkBehaviour
     private StateBase _stateController;
     public StateBase.ESubState _curState;
 
-    //private List<Player> players;
-
-    //[SyncVar]
-    private int currentPlayerNumber;
     private PlayerEntity currentPE;
     private PlayerEntity _winnerPlayer; 
 
@@ -168,7 +164,6 @@ public class RootController : NetworkBehaviour
         players.Add(player2);*/
 
         //currentPlayer = player1;
-        currentPlayerNumber = 0;
         if (GetPlayerEntity(0))
             currentPE = GetPlayerEntity(0); 
     }

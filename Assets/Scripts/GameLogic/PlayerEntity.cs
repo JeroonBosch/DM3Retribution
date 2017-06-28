@@ -161,7 +161,7 @@ public class PlayerEntity : NetworkBehaviour
 
     public void GameStart ()
     {
-        Debug.Log("Init for PE " + number);
+        //Debug.Log("Init for PE " + number);
 
         grid = GameObject.Find("HexBoard").GetComponent<HexGrid>();
         if (number == 0)
@@ -174,7 +174,7 @@ public class PlayerEntity : NetworkBehaviour
 
     public void SetUI ()
     {
-        Debug.Log("Setting UI for PE " + number);
+        //Debug.Log("Setting UI for PE " + number);
         _uiTransform = GameObject.Find("Player" + number).transform;
 
         if (_uiTransform.Find("PortraitHP"))
@@ -795,14 +795,12 @@ public class PlayerEntity : NetworkBehaviour
     {
         GameObject newObj = Instantiate(Resources.Load<GameObject>(path));
         SpecialPowerUI[] check = GameObject.FindObjectsOfType<SpecialPowerUI>();
-        SpecialPowerUI usedPower = null;
         Transform parentObj = null;
 
         for (int i = 0; i < check.Length; i++)
         {
             if (check[i].Type == type) {
                 parentObj = check[i].transform.parent.parent;
-                usedPower = check[i];
             }
         }
 

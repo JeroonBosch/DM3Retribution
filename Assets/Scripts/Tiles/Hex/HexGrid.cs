@@ -234,7 +234,7 @@ public class HexGrid : NetworkBehaviour
 
     public void CreateBoosterAt(HexTile tile, int totalCount, TileTypes.ESubState requestedType)
     {
-        Debug.Log(tile.xy + " Booster requested");
+        Debug.Log(tile.xy + " Booster requested of type " + requestedType);
         _boosterRequest = tile.xy;
         _boosterType = requestedType;
 
@@ -290,7 +290,7 @@ public class HexGrid : NetworkBehaviour
             else
                 row.tiles.Add(tile);
 
-            Debug.Log("Server added tile to Row " + row.number + " w index: " + row.tiles.IndexOf(tile));
+            //Debug.Log("Server added tile to Row " + row.number + " w index: " + row.tiles.IndexOf(tile));
             RpcAddTile(tile.type.Type, row.number, direction);
         }
 
@@ -320,7 +320,7 @@ public class HexGrid : NetworkBehaviour
             else
                 row.tiles.Add(tile);
 
-            Debug.Log("Client added tile to Row " + row.number + " w index: " + row.tiles.IndexOf(tile));
+            //Debug.Log("Client added tile to Row " + row.number + " w index: " + row.tiles.IndexOf(tile));
 
             foreach (HexTile otherTiles in row.tiles)
             {
@@ -344,7 +344,7 @@ public class HexGrid : NetworkBehaviour
 
     private void ConvertTileToBooster(Vector2 position, TileTypes.ESubState requestedType, string path)
     {
-        Debug.Log("Converting tile at " + position + " to " + path);
+        Debug.Log("Converting tile at " + position + " to " + path + " of type " + requestedType);
         HexRow row = rows[(int)position.x];
         HexTile targetTile = row.tiles.Find(item => item.x == position.x && item.y == position.y);
 
@@ -356,7 +356,7 @@ public class HexGrid : NetworkBehaviour
             row.tiles.RemoveAt(index);
             Destroy(targetTile.gameObject);
             row.tiles.Insert(index, newTile.GetComponent<HexTile>());
-            newTile.GetComponent<HexTile>().curType = requestedType;
+            newTile.GetComponent<HexTile>().SetType(requestedType);
             newTile.transform.SetSiblingIndex(index);
             newTile.GetComponent<HexTile>().xy = new Vector2(row.number, index);
             newTile.transform.name = "Tile (" + row.number + ", " + index + ")"; //F.e. Tile (0,7)
