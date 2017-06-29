@@ -44,6 +44,7 @@ public class PlayerEntity : NetworkBehaviour
 
 
     private bool fingerDown = false;
+    public bool GetFingerDown { get { return fingerDown; } }
     private bool visibility = false;
     private Image image;
     public int number;
@@ -808,7 +809,14 @@ public class PlayerEntity : NetworkBehaviour
 
         if (newObj != null)
         {
-            NetworkServer.SpawnWithClientAuthority(newObj, NetworkServer.connections[RootController.Instance.GetNextPlayerEntity().number]);
+            NetworkConnection conn = connectionToClient != null ? connectionToClient : connectionToServer;
+            Debug.Log("Conn 2client is " + connectionToClient);
+            Debug.Log("Conn 2server is " + connectionToServer);
+            Debug.Log("Conn manual next is " + NetworkServer.connections[RootController.Instance.GetNextPlayerEntity().number]);
+            Debug.Log("Conn manual cur is " + NetworkServer.connections[RootController.Instance.GetCurrentPlayerEntity().number]);
+            if (conn == null)
+                conn = NetworkServer.connections[RootController.Instance.GetNextPlayerEntity().number];
+            NetworkServer.SpawnWithClientAuthority(newObj, conn);
             RpcSummonPower(type);
 
 

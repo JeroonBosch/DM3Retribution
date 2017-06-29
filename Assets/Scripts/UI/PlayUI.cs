@@ -273,7 +273,9 @@ public class PlayUI : StateUI
             {
                 if (_selectedUI.name.Contains("Color"))
                 {
-                    _selectedUI.GetComponent<SpecialPowerUI>().Fly();
+                    //_selectedUI.GetComponent<SpecialPowerUI>().Fly();
+                    if (_selectedUI.GetComponent<SpecialPowerUI>().Type == TileTypes.ESubState.blue || _selectedUI.GetComponent<SpecialPowerUI>().Type == TileTypes.ESubState.green)
+                        RootController.Instance.GetCurrentPlayer().EmptyPower(_selectedUI.GetComponent<SpecialPowerUI>().Type);
                 }
 
                 _selectedUI = null;
@@ -283,7 +285,7 @@ public class PlayUI : StateUI
         {
             if (_selectedUI2 != null)
             {
-                _selectedUI2.GetComponent<SpecialPowerUI>().Fly();
+                //_selectedUI2.GetComponent<SpecialPowerUI>().Fly();
                 _selectedUI2 = null;
             }
         }

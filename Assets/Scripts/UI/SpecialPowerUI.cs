@@ -45,7 +45,7 @@ public class SpecialPowerUI : MonoBehaviour {
         }
     }
 
-    void LateUpdate () {
+    /*void LateUpdate () {
         if (_active && _activeObject && _finger != null)
         {
             _activeObject.transform.position = _finger.GetWorldPosition(1f, Camera.current);
@@ -53,7 +53,7 @@ public class SpecialPowerUI : MonoBehaviour {
             _lastPos = _curPos;
             _curPos = _finger.GetWorldPosition(1f, Camera.current);
         }
-    }
+    }*/
 
     public void UpdateText (float power)
     {
@@ -99,7 +99,7 @@ public class SpecialPowerUI : MonoBehaviour {
             Destroy(_activeObject);
         _activeObject = null;
 
-        _active = true;
+        //_active = true;
         _finger = finger;
 
         curPlayer.ActivateSpecialPower(_type.Type);

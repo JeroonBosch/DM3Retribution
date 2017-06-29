@@ -4,14 +4,25 @@ using UnityEngine.Networking;
 
 public class MissileUI : NetworkBehaviour
 {
+    private Vector2 _velocity;
+    private Vector2 _curPos;
+    private Vector2 _lastPos;
+
+    private float _speed = 10f;
+
+
     private PlayerEntity _target; //The target that's supposed to get hit
     public PlayerEntity target { set { _target = value;  } }
 
     private TileTypes _type;
     public TileTypes.ESubState Type { set { _type.Type = value; } get { return _type.Type;  } }
 
+    [SyncVar]
+    public bool isBeingDestroyed = false;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log("Collision detected. Auth? " + hasAuthority);
         if (hasAuthority) { 
             Debug.Log("Debug: _target.uiTransform.name is " + _target.uiTransform.name);
             Debug.Log("Debug: collision.gameObject.name is " + collision.gameObject.name);
@@ -23,8 +34,11 @@ public class MissileUI : NetworkBehaviour
                     CmdDamageTarget(_target.number, _type.Type);
                 }
 
-                if (!isServer)
-                    CmdDestroy();
+                /*if (isClient && hasAuthority && !isBeingDestroyed)
+                {
+                    //CmdDestroy();
+                    //isBeingDestroyed = true;
+                }*/
             }
         }
     }
@@ -33,7 +47,31 @@ public class MissileUI : NetworkBehaviour
     {
         _type = new TileTypes();
         Destroy(gameObject, 4f);
+        if (isClient && hasAuthority)
+            CmdDestroyTimed(4f);
     }
+
+    void LateUpdate () {
+        if (hasAuthority && RootController.Instance.GetMyPlayerEntity().GetFingerDown)
+        {
+            transform.position = RootController.Instance.GetMyPlayerEntity().transform.position;
+            _velocity = new Vector2(_curPos.x - _lastPos.x, _curPos.y - _lastPos.y);
+            _lastPos = _curPos;
+            _curPos = RootController.Instance.GetMyPlayerEntity().transform.position;
+        }
+        else if (hasAuthority && !RootController.Instance.GetMyPlayerEntity().GetFingerDown)
+            Fly();
+    }
+
+    private void Fly()
+    {
+        RootController.Instance.GetMyPlayerEntity().EmptyPower(_type.Type);
+
+        Rigidbody2D rb = gameObject.GetComponent<Rigidbody2D>();
+        rb.velocity = _velocity * _speed;
+
+    }
+
 
     private void OnDestroy()
     {
@@ -46,13 +84,31 @@ public class MissileUI : NetworkBehaviour
     [Command]
     private void CmdDestroy()
     {
+        isBeingDestroyed = true;
         RpcDestroy();
     }
     [ClientRpc]
     private void RpcDestroy()
     {
-        if (gameObject)
+        if (!isBeingDestroyed)
+        {
             Destroy(gameObject);
+            isBeingDestroyed = true;
+        }   
+    }
+    [Command]
+    private void CmdDestroyTimed(float time)
+    {
+        RpcDestroyTimed(time);
+    }
+    [ClientRpc]
+    private void RpcDestroyTimed(float time)
+    {
+        if (!isBeingDestroyed)
+        {
+            Destroy(gameObject, time);
+            isBeingDestroyed = true;
+        }
     }
 
     [Command]
