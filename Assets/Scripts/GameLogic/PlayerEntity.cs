@@ -11,33 +11,40 @@ public class PlayerEntity : NetworkBehaviour
 
     #region values
     //Requirements
+    [SyncVar]
     private float _yellowFillRequirement;
     public float YellowFillRequirement { get { return _yellowFillRequirement; } set { _yellowFillRequirement = value; } }
 
+    [SyncVar]
     private float _blueFillRequirement;
     public float BlueFillRequirement { get { return _blueFillRequirement; } set { _blueFillRequirement = value; } }
 
+    [SyncVar]
     private float _greenFillRequirement;
     public float GreenFillRequirement { get { return _greenFillRequirement; } set { _greenFillRequirement = value; } }
 
+    [SyncVar]
     private float _redFillRequirement;
     public float RedFillRequirement { get { return _redFillRequirement; } set { _redFillRequirement = value; } }
 
     //Values
+    [SyncVar]
     private float _yellowValue;
     public float YellowValue { get { return _yellowValue; } set { _yellowValue = value; } }
 
+    [SyncVar]
     private float _greenValue;
     public float GreenValue { get { return _greenValue; } set { _greenValue = value; } }
 
+    [SyncVar]
     private float _redValue;
     public float RedValue { get { return _redValue; } set { _redValue = value; } }
 
-
+    [SyncVar]
     private float _specialityMultiplier;
     public float SpecialityMultiplier { get { return _specialityMultiplier; } set { _specialityMultiplier = value; } }
 
-
+    [SyncVar]
     private float _playerHealth; //max health
     public float PlayerHealth { get { return _playerHealth; } set { _playerHealth = value; } }
     #endregion
@@ -64,7 +71,7 @@ public class PlayerEntity : NetworkBehaviour
     private Sprite _pSprite;
 
 
-
+    [SyncVar]
     private float _health;
     public float health { get { return _health; } set { _health = value; } }
 

@@ -34,6 +34,12 @@ public class FingerTracker : NetworkBehaviour
         Lean.Touch.LeanTouch.OnFingerUp += OnFingerUp;
     }
 
+    private void OnDisable()
+    {
+        Lean.Touch.LeanTouch.OnFingerDown -= OnFingerDown;
+        Lean.Touch.LeanTouch.OnFingerUp -= OnFingerUp;
+    }
+
     private void OnFingerDown(Lean.Touch.LeanFinger finger)
     {
         if (finger.Index == 0 && hasAuthority)

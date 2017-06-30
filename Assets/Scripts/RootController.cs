@@ -26,16 +26,18 @@ public class RootController : NetworkBehaviour
 
     public void Restart()
     {
-        SceneManager.LoadScene(0);
+        //Destroy(GameObject.Find("LobbyManager"));
+        GameObject.Find("LobbyManager").GetComponent<NetworkLobbyManager>().ServerReturnToLobby();
+        //SceneManager.LoadScene(0);
     }
     private void Awake()
     {
         // First we check if there are any other instances conflicting
-        if (Instance != null && Instance != this)
+        /*if (Instance != null && Instance != this)
         {
             // If that is the case, we destroy other instances
             Destroy(gameObject);
-        }
+        }*/
         Instance = this;
         DontDestroyOnLoad(gameObject);
 

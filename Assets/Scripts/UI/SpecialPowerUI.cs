@@ -6,15 +6,7 @@ using UnityEngine.UI;
 public class SpecialPowerUI : MonoBehaviour {
     private PlayerEntity _player;
     private GameObject _activeObject;
-    private bool _active = false;
-    private Lean.Touch.LeanFinger _finger;
     private Text _text;
-
-    private Vector2 _velocity;
-    private Vector2 _curPos;
-    private Vector2 _lastPos;
-
-    private float _speed = 10f;
 
     private TileTypes _type;
     public TileTypes.ESubState Type { get { return _type.Type;  }}
@@ -45,16 +37,6 @@ public class SpecialPowerUI : MonoBehaviour {
         }
     }
 
-    /*void LateUpdate () {
-        if (_active && _activeObject && _finger != null)
-        {
-            _activeObject.transform.position = _finger.GetWorldPosition(1f, Camera.current);
-            _velocity = new Vector2 (_curPos.x - _lastPos.x, _curPos.y - _lastPos.y);
-            _lastPos = _curPos;
-            _curPos = _finger.GetWorldPosition(1f, Camera.current);
-        }
-    }*/
-
     public void UpdateText (float power)
     {
         if (_player)
@@ -81,30 +63,13 @@ public class SpecialPowerUI : MonoBehaviour {
         _player = myPlayer;
     }
 
-    public void Fly ()
-    {
-        _active = false;
-        _player.EmptyPower(_type.Type);
-
-        if (_activeObject) { 
-            Rigidbody2D rb = _activeObject.GetComponent<Rigidbody2D>();
-            rb.velocity = _velocity * _speed;
-            //RootController.Instance.DisableControls();
-        }
-    }
-
     public void SetActive (Lean.Touch.LeanFinger finger, PlayerEntity curPlayer)
     {
         if (_activeObject != null)
             Destroy(_activeObject);
         _activeObject = null;
 
-        //_active = true;
-        _finger = finger;
-
         curPlayer.ActivateSpecialPower(_type.Type);
-        _curPos = _finger.GetWorldPosition(1f, Camera.current);
-        _lastPos = _finger.GetWorldPosition(1f, Camera.current);
     }
     
     public void SetActiveObject (GameObject obj)
